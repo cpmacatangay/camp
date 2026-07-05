@@ -1,7 +1,7 @@
 function errorHandler(err, req, res, _next) {
   console.error('Unhandled error:', err);
 
-  if (err.name === 'ValidationError') {
+  if (err.name === 'ValidationError' && err.errors) {
     const messages = Object.values(err.errors).map((e) => e.message);
     return res.status(400).json({ message: 'Validation error', errors: messages });
   }

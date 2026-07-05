@@ -27,8 +27,8 @@ async function update(req, res, next) {
     const { id } = req.params;
     const updates = { ...req.body };
 
-    if (req.file) {
-      updates.paymentScreenshotUrl = `/${process.env.UPLOAD_DIR}/${req.file.filename}`;
+    if (req.file && updates.paymentStatus === 'yes') {
+      updates.paymentScreenshotUrl = `/uploads/${req.file.filename}`;
     }
 
     if (updates.paymentStatus === 'yes' && !updates.paymentScreenshotUrl && !req.file) {
@@ -58,7 +58,7 @@ async function addByAdmin(req, res, next) {
       if (!req.file) {
         return res.status(400).json({ message: 'Payment screenshot required when payment status is Yes' });
       }
-      body.paymentScreenshotUrl = `/${process.env.UPLOAD_DIR}/${req.file.filename}`;
+      body.paymentScreenshotUrl = `/uploads/${req.file.filename}`;
     } else {
       body.paymentScreenshotUrl = '';
     }

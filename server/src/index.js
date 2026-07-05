@@ -42,7 +42,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 const uploadDir = path.resolve(process.env.UPLOAD_DIR || "uploads");
-app.use(`/${process.env.UPLOAD_DIR}`, express.static(uploadDir));
+app.use("/uploads", express.static(uploadDir));
 
 const publicLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
