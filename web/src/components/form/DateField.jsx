@@ -7,7 +7,7 @@ export default function DateField({ label, value, onChange, error, required }) {
     <div>
       <label className="block text-sm font-medium text-gray-700 mb-1">
         {label}
-        {required && <span className="text-[10px] leading-none font-medium text-rose-500 bg-rose-50 border border-rose-200 px-1.5 py-0.5 rounded-full ml-1.5 align-middle">Required</span>}
+        {required && !value && <span className="text-[10px] leading-none font-medium text-rose-500 bg-rose-50 border border-rose-200 px-1.5 py-0.5 rounded-full ml-1.5 align-middle">Required</span>}
       </label>
       <input
         type="date"

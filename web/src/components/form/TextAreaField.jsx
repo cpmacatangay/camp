@@ -9,7 +9,7 @@ export default function TextAreaField({ label, value, onChange, error, required,
     <div>
       <label className="block text-sm font-medium text-gray-700 mb-1">
         {label}
-        {required && <RequiredBadge />}
+        {required && !value && <RequiredBadge />}
       </label>
       <textarea
         rows={rows}

@@ -9,7 +9,7 @@ export default function TextField({ label, value, onChange, error, required, typ
     <div>
       <label className="block text-sm font-medium text-gray-700 mb-1">
         {label}
-        {required && <RequiredBadge />}
+        {required && !value && <RequiredBadge />}
       </label>
       <input
         type={type}
