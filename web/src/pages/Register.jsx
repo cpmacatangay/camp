@@ -99,12 +99,12 @@ export default function Register() {
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-10">
-      <div className="text-center mb-8">
-        <h1 className="text-3xl font-bold text-green-800">Camp Registration</h1>
+      <div className="text-center mb-6 sm:mb-8">
+        <h1 className="text-2xl sm:text-3xl font-bold text-green-800">Camp Registration</h1>
         <p className="text-gray-500 mt-1">Fill in all required fields to register</p>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-5 bg-white rounded-2xl shadow-sm border p-6">
+      <form onSubmit={handleSubmit} className="space-y-5 bg-white rounded-2xl shadow-sm border p-4 sm:p-6">
         {errors._form && (
           <div className="bg-red-50 border border-red-200 text-red-700 rounded-lg px-4 py-3 text-sm">
             {errors._form}
@@ -137,7 +137,7 @@ export default function Register() {
         <button
           type="submit"
           disabled={submitting}
-          className="w-full flex items-center justify-center gap-2 bg-green-700 hover:bg-green-800 disabled:bg-green-400 text-white font-semibold py-3 rounded-lg transition-colors cursor-pointer"
+          className="w-full flex items-center justify-center gap-2 bg-green-700 hover:bg-green-800 disabled:bg-green-400 text-white font-semibold py-3.5 sm:py-3 rounded-lg transition-colors cursor-pointer min-h-[48px]"
         >
           <Send size={18} />
           {submitting ? 'Submitting...' : 'Submit Registration'}

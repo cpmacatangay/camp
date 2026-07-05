@@ -101,14 +101,14 @@ export default function ParticipantModal({ open, participant, onSave, onClose })
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-start justify-center pt-10 bg-black/40 overflow-y-auto"
+      className="fixed inset-0 z-50 flex items-start justify-center pt-4 sm:pt-10 bg-black/40 overflow-y-auto"
       role="dialog"
       aria-modal="true"
       aria-labelledby={titleId}
       onClick={(e) => { if (e.target === e.currentTarget) onClose() }}
     >
-      <div ref={modalRef} className="bg-white rounded-xl shadow-lg w-full max-w-2xl mx-4 mb-10">
-        <div className="flex items-center justify-between p-6 border-b">
+      <div ref={modalRef} className="bg-white rounded-xl shadow-lg w-full max-w-2xl mx-4 mb-4 sm:mb-10">
+        <div className="flex items-center justify-between p-4 sm:p-6 border-b">
           <h2 id={titleId} className="text-lg font-semibold text-gray-800">
             {isEdit ? 'Edit Participant' : 'Add New Participant'}
           </h2>
@@ -117,7 +117,7 @@ export default function ParticipantModal({ open, participant, onSave, onClose })
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-6 space-y-4">
+        <form onSubmit={handleSubmit} className="p-4 sm:p-6 space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <TextField label="Name" value={form.name} onChange={set('name')} error={errors.name} required />
             <TextField label="Nickname" value={form.nickname} onChange={set('nickname')} error={errors.nickname} required />
@@ -143,11 +143,11 @@ export default function ParticipantModal({ open, participant, onSave, onClose })
             existingScreenshotUrl={isEdit ? participant.paymentScreenshotUrl : undefined}
           />
 
-          <div className="flex justify-end gap-3 pt-2">
-            <button type="button" onClick={onClose} className="px-4 py-2 text-sm rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 cursor-pointer">
+          <div className="flex flex-col-reverse sm:flex-row justify-end gap-3 pt-2">
+            <button type="button" onClick={onClose} className="w-full sm:w-auto px-4 py-3 sm:py-2 text-sm rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 cursor-pointer min-h-[44px] sm:min-h-0">
               Cancel
             </button>
-            <button type="submit" disabled={saving} className="px-4 py-2 text-sm rounded-lg bg-green-700 text-white hover:bg-green-800 disabled:bg-green-400 cursor-pointer">
+            <button type="submit" disabled={saving} className="w-full sm:w-auto px-4 py-3 sm:py-2 text-sm rounded-lg bg-green-700 text-white hover:bg-green-800 disabled:bg-green-400 cursor-pointer min-h-[44px] sm:min-h-0">
               {saving ? 'Saving...' : isEdit ? 'Update' : 'Add Participant'}
             </button>
           </div>

@@ -132,18 +132,18 @@ export default function Dashboard() {
       <header className="bg-white border-b">
         <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
           <h1 className="text-xl font-bold text-green-800">Admin Dashboard</h1>
-          <div className="flex items-center gap-3">
-            <span className="text-sm text-gray-500">{user.email}</span>
+          <div className="flex items-center gap-2 sm:gap-3">
+            <span className="hidden sm:inline text-sm text-gray-500">{user.email}</span>
             <button
               onClick={handleExport}
-              className="flex items-center gap-1.5 text-sm bg-green-50 text-green-700 border border-green-200 px-3 py-2 rounded-lg hover:bg-green-100 cursor-pointer"
+              className="flex items-center gap-1.5 text-sm bg-green-50 text-green-700 border border-green-200 px-4 py-2.5 sm:py-2 rounded-lg hover:bg-green-100 cursor-pointer min-h-[44px] sm:min-h-0"
             >
               <Download size={16} />
-              Export Excel
+              Export
             </button>
             <button
               onClick={handleLogout}
-              className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-red-600 cursor-pointer"
+              className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-red-600 cursor-pointer px-2 py-2.5 sm:py-2 min-h-[44px] sm:min-h-0"
             >
               <LogOut size={16} />
               Logout
@@ -155,7 +155,7 @@ export default function Dashboard() {
       <main className="max-w-6xl mx-auto px-4 py-6 space-y-4">
         <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between">
           <div className="flex flex-1 gap-3 flex-wrap">
-            <div className="relative flex-1 min-w-[200px]">
+            <div className="relative w-full sm:flex-1 sm:min-w-[200px]">
               <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
               <input
                 type="text"
@@ -165,12 +165,12 @@ export default function Dashboard() {
                 className="w-full pl-9 pr-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
               />
             </div>
-            <select value={paymentFilter} onChange={(e) => setPaymentFilter(e.target.value)} className={filterClass}>
+            <select value={paymentFilter} onChange={(e) => setPaymentFilter(e.target.value)} className={`${filterClass} flex-1 sm:flex-none`}>
               <option value="">All Payments</option>
               <option value="yes">Paid</option>
               <option value="no">Not Paid</option>
             </select>
-            <select value={attendanceFilter} onChange={(e) => setAttendanceFilter(e.target.value)} className={filterClass}>
+            <select value={attendanceFilter} onChange={(e) => setAttendanceFilter(e.target.value)} className={`${filterClass} flex-1 sm:flex-none`}>
               <option value="">All Attendance</option>
               <option value="Present">Present</option>
               <option value="Absent">Absent</option>
@@ -178,7 +178,7 @@ export default function Dashboard() {
           </div>
           <button
             onClick={() => setModalOpen(true)}
-            className="flex items-center gap-1.5 bg-green-700 hover:bg-green-800 text-white text-sm font-semibold px-4 py-2 rounded-lg transition-colors cursor-pointer"
+            className="w-full sm:w-auto flex items-center justify-center gap-1.5 bg-green-700 hover:bg-green-800 text-white text-sm font-semibold px-5 py-3 rounded-lg transition-colors cursor-pointer min-h-[48px]"
           >
             <Plus size={16} />
             Add Participant
