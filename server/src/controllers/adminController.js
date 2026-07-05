@@ -2,7 +2,7 @@ const Participant = require('../models/Participant');
 
 async function list(req, res, next) {
   try {
-    const { search, paymentStatus, attendanceStatus } = req.query;
+    const { search, paymentStatus, attendanceStatus, page = 1, limit = 10 } = req.query;
     const filter = {};
 
     if (search) {
@@ -15,8 +15,21 @@ async function list(req, res, next) {
     if (paymentStatus) filter.paymentStatus = paymentStatus;
     if (attendanceStatus) filter.attendanceStatus = attendanceStatus;
 
-    const participants = await Participant.find(filter).sort({ createdAt: -1 });
-    res.json(participants);
+    const pageNum = Math.max(1, parseInt(page, 10) || 1);
+    const limitNum = Math.max(1, Math.min(100, parseInt(limit, 10) || 10));
+    const skip = (pageNum - 1) * limitNum;
+
+    const [participants, total] = await Promise.all([
+      Participant.find(filter).sort({ createdAt: -1 }).skip(skip).limit(limitNum),
+      Participant.countDocuments(filter),
+    ]);
+
+    res.json({
+      participants,
+      total,
+      page: pageNum,
+      totalPages: Math.ceil(total / limitNum),
+    });
   } catch (err) {
     next(err);
   }

@@ -24,6 +24,9 @@ export default function Dashboard() {
   const [paymentFilter, setPaymentFilter] = useState('')
   const [attendanceFilter, setAttendanceFilter] = useState('')
   const [loading, setLoading] = useState(true)
+  const [page, setPage] = useState(1)
+  const [totalPages, setTotalPages] = useState(0)
+  const [total, setTotal] = useState(0)
   const [modalOpen, setModalOpen] = useState(false)
   const [editing, setEditing] = useState(null)
   const [deleting, setDeleting] = useState(null)
@@ -33,22 +36,28 @@ export default function Dashboard() {
 
   const fetchParticipants = useCallback(async () => {
     try {
-      const params = {}
+      const params = { page, limit: 10 }
       if (debouncedSearch) params.search = debouncedSearch
       if (paymentFilter) params.paymentStatus = paymentFilter
       if (attendanceFilter) params.attendanceStatus = attendanceFilter
       const data = await getParticipants(params)
-      setParticipants(data)
+      setParticipants(data.participants)
+      setTotal(data.total)
+      setTotalPages(data.totalPages)
     } catch {
       toast.error('Failed to load participants')
     } finally {
       setLoading(false)
     }
-    }, [debouncedSearch, paymentFilter, attendanceFilter, toast])
+    }, [debouncedSearch, paymentFilter, attendanceFilter, page, toast])
 
   useEffect(() => {
     fetchParticipants()
   }, [fetchParticipants])
+
+  useEffect(() => {
+    setPage(1)
+  }, [debouncedSearch, paymentFilter, attendanceFilter])
 
   useEffect(() => {
     if (!user?.token) return
@@ -186,18 +195,18 @@ export default function Dashboard() {
         </div>
 
         <div className="text-sm text-gray-500">
-          {loading ? '' : `${participants.length} participant${participants.length === 1 ? '' : 's'}`}
+          {loading ? '' : total === 0 ? '0 participants' : `Showing ${(page - 1) * 10 + 1}–${Math.min(page * 10, total)} of ${total} participant${total === 1 ? '' : 's'}`}
         </div>
 
         {/* Desktop table */}
         <div className="hidden md:block bg-white rounded-xl shadow-sm border overflow-x-auto">
-          <table className="w-full text-sm">
+          <table className="w-full text-sm table-fixed">
             <thead>
               <tr className="border-b bg-gray-50 text-left">
-                <th className="px-4 py-3 font-medium text-gray-600">Name</th>
-                <th className="px-4 py-3 font-medium text-gray-600">Payment</th>
-                <th className="px-4 py-3 font-medium text-gray-600">Attendance</th>
-                <th className="px-4 py-3 font-medium text-gray-600 text-right">Actions</th>
+                <th className="px-4 py-3 font-medium text-gray-600 w-[40%]">Name</th>
+                <th className="px-4 py-3 font-medium text-gray-600 w-[20%]">Payment</th>
+                <th className="px-4 py-3 font-medium text-gray-600 w-[20%]">Attendance</th>
+                <th className="px-4 py-3 font-medium text-gray-600 w-[20%] text-right">Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -337,6 +346,43 @@ export default function Dashboard() {
             ))
           )}
         </div>
+
+        {/* Pagination */}
+        {!loading && totalPages > 1 && (
+          <div className="flex items-center justify-center gap-2 pt-2">
+            <button
+              onClick={() => setPage((p) => Math.max(1, p - 1))}
+              disabled={page <= 1}
+              className="px-3 py-2 text-sm rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-100 disabled:opacity-40 disabled:cursor-default cursor-pointer"
+            >
+              ← Prev
+            </button>
+            {Array.from({ length: totalPages }, (_, i) => i + 1)
+              .filter((p) => p === 1 || p === totalPages || Math.abs(p - page) <= 1)
+              .map((p, idx, arr) => (
+                <span key={p} className="flex items-center">
+                  {idx > 0 && arr[idx - 1] !== p - 1 && <span className="px-1 text-gray-400 text-sm">…</span>}
+                  <button
+                    onClick={() => setPage(p)}
+                    className={`px-3 py-1.5 text-sm rounded-lg cursor-pointer ${
+                      p === page
+                        ? 'bg-green-700 text-white font-semibold'
+                        : 'text-gray-700 hover:bg-gray-100'
+                    }`}
+                  >
+                    {p}
+                  </button>
+                </span>
+              ))}
+            <button
+              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+              disabled={page >= totalPages}
+              className="px-3 py-2 text-sm rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-100 disabled:opacity-40 disabled:cursor-default cursor-pointer"
+            >
+              Next →
+            </button>
+          </div>
+        )}
       </main>
 
       <ParticipantModal
