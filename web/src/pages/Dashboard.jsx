@@ -8,11 +8,10 @@ import {
   deleteParticipant,
   setAttendance,
   exportExcel,
-  setAuthToken,
 } from '../api/client'
+import { useAuth } from '../context/AuthContext'
 import ParticipantModal from '../components/ParticipantModal'
 import ConfirmDialog from '../components/ConfirmDialog'
-import { useNavigate } from 'react-router-dom'
 
 export default function Dashboard() {
   const [participants, setParticipants] = useState([])
@@ -23,14 +22,8 @@ export default function Dashboard() {
   const [modalOpen, setModalOpen] = useState(false)
   const [editing, setEditing] = useState(null)
   const [deleting, setDeleting] = useState(null)
-  const navigate = useNavigate()
+  const { user, logout } = useAuth()
   const socketRef = useRef(null)
-
-  const user = JSON.parse(localStorage.getItem('camp_user') || '{}')
-
-  useEffect(() => {
-    if (user.token) setAuthToken(user.token)
-  }, [user.token])
 
   const fetchParticipants = useCallback(async () => {
     try {
@@ -51,7 +44,7 @@ export default function Dashboard() {
   }, [fetchParticipants])
 
   useEffect(() => {
-    if (!user.token) return
+    if (!user?.token) return
     const socket = io('/', {
       auth: { token: user.token },
     })
@@ -70,8 +63,7 @@ export default function Dashboard() {
   }, [user.token])
 
   function handleLogout() {
-    localStorage.removeItem('camp_user')
-    navigate('/login')
+    logout()
   }
 
   async function handleExport() {

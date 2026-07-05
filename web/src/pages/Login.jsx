@@ -1,13 +1,14 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { LogIn } from 'lucide-react'
-import { loginAdmin, setAuthToken } from '../api/client'
+import { useAuth } from '../context/AuthContext'
 
 export default function Login() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const { login } = useAuth()
   const navigate = useNavigate()
 
   async function handleSubmit(e) {
@@ -15,9 +16,7 @@ export default function Login() {
     setError('')
     setLoading(true)
     try {
-      const data = await loginAdmin(email, password)
-      localStorage.setItem('camp_user', JSON.stringify(data))
-      setAuthToken(data.token)
+      await login(email, password)
       navigate('/dashboard')
     } catch (err) {
       setError(err.response?.data?.message || 'Login failed')

@@ -1,13 +1,16 @@
 import { createContext, useContext, useState, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
-import client from '../api/client'
+import client, { setAuthToken } from '../api/client'
 
 const AuthContext = createContext(null)
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(() => {
     const stored = localStorage.getItem('camp_user')
-    return stored ? JSON.parse(stored) : null
+    if (!stored) return null
+    const parsed = JSON.parse(stored)
+    setAuthToken(parsed.token)
+    return parsed
   })
   const navigate = useNavigate()
 
@@ -15,26 +18,20 @@ export function AuthProvider({ children }) {
     const { data } = await client.post('/auth/login', { email, password })
     const userData = { token: data.token, role: data.role, email: data.email }
     localStorage.setItem('camp_user', JSON.stringify(userData))
+    setAuthToken(data.token)
     setUser(userData)
     return userData
   }, [])
 
   const logout = useCallback(() => {
     localStorage.removeItem('camp_user')
+    setAuthToken(null)
     setUser(null)
     navigate('/login')
   }, [navigate])
 
-  const authedClient = useCallback(() => {
-    const instance = client
-    instance.defaults.headers.common['Authorization'] = user?.token
-      ? `Bearer ${user.token}`
-      : ''
-    return instance
-  }, [user])
-
   return (
-    <AuthContext.Provider value={{ user, login, logout, authedClient }}>
+    <AuthContext.Provider value={{ user, login, logout }}>
       {children}
     </AuthContext.Provider>
   )
