@@ -1,8 +1,13 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Upload, Send } from 'lucide-react'
+import { Send } from 'lucide-react'
 import { registerParticipant } from '../api/client'
-import RequiredBadge from '../components/RequiredBadge'
+import { useToast } from '../components/Toast'
+import TextField from '../components/form/TextField'
+import TextAreaField from '../components/form/TextAreaField'
+import DateField from '../components/form/DateField'
+import ParentsFieldset from '../components/form/ParentsFieldset'
+import PaymentSection from '../components/form/PaymentSection'
 
 const INITIAL = {
   name: '',
@@ -25,6 +30,7 @@ export default function Register() {
   const [file, setFile] = useState(null)
   const [errors, setErrors] = useState({})
   const [submitting, setSubmitting] = useState(false)
+  const toast = useToast()
   const navigate = useNavigate()
 
   function set(field) {
@@ -81,21 +87,15 @@ export default function Register() {
       })
     } catch (err) {
       const msg =
-        err.response?.data?.message ||
-        err.response?.data?.errors?.[0] ||
-        'Registration failed. Please try again.'
-      setErrors({ _form: msg })
+            err.response?.data?.message ||
+            err.response?.data?.errors?.[0] ||
+            'Registration failed. Please try again.'
+          setErrors({ _form: msg })
+          toast.error(msg)
     } finally {
       setSubmitting(false)
     }
   }
-
-  const inputClass = (field) =>
-    `w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 ${
-      errors[field] ? 'border-red-400 bg-red-50' : 'border-gray-300'
-    }`
-
-  const labelClass = 'block text-sm font-medium text-gray-700 mb-1'
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-10">
@@ -112,125 +112,27 @@ export default function Register() {
         )}
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label className={labelClass}>Name <RequiredBadge /></label>
-            <input className={inputClass('name')} value={form.name} onChange={set('name')} />
-            {errors.name && <p className="text-red-500 text-xs mt-1">{errors.name}</p>}
-          </div>
-          <div>
-            <label className={labelClass}>Nickname <RequiredBadge /></label>
-            <input className={inputClass('nickname')} value={form.nickname} onChange={set('nickname')} />
-            {errors.nickname && <p className="text-red-500 text-xs mt-1">{errors.nickname}</p>}
-          </div>
-          <div>
-            <label className={labelClass}>Birth Date <RequiredBadge /></label>
-            <input type="date" className={inputClass('birthDate')} value={form.birthDate} onChange={set('birthDate')} />
-            {errors.birthDate && <p className="text-red-500 text-xs mt-1">{errors.birthDate}</p>}
-          </div>
-          <div>
-            <label className={labelClass}>Email <RequiredBadge /></label>
-            <input type="email" className={inputClass('email')} value={form.email} onChange={set('email')} />
-            {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email}</p>}
-          </div>
-          <div>
-            <label className={labelClass}>Contact Number <RequiredBadge /></label>
-            <input className={inputClass('contactNumber')} value={form.contactNumber} onChange={set('contactNumber')} />
-            {errors.contactNumber && <p className="text-red-500 text-xs mt-1">{errors.contactNumber}</p>}
-          </div>
-          <div>
-            <label className={labelClass}>Facebook Name <RequiredBadge /></label>
-            <input className={inputClass('facebookName')} value={form.facebookName} onChange={set('facebookName')} />
-            {errors.facebookName && <p className="text-red-500 text-xs mt-1">{errors.facebookName}</p>}
-          </div>
+          <TextField label="Name" value={form.name} onChange={set('name')} error={errors.name} required />
+          <TextField label="Nickname" value={form.nickname} onChange={set('nickname')} error={errors.nickname} required />
+          <DateField label="Birth Date" value={form.birthDate} onChange={set('birthDate')} error={errors.birthDate} required />
+          <TextField label="Email" type="email" value={form.email} onChange={set('email')} error={errors.email} required />
+          <TextField label="Contact Number" value={form.contactNumber} onChange={set('contactNumber')} error={errors.contactNumber} required />
+          <TextField label="Facebook Name" value={form.facebookName} onChange={set('facebookName')} error={errors.facebookName} required />
         </div>
 
-        <div>
-          <label className={labelClass}>Home Address <RequiredBadge /></label>
-          <textarea rows={2} className={inputClass('homeAddress')} value={form.homeAddress} onChange={set('homeAddress')} />
-          {errors.homeAddress && <p className="text-red-500 text-xs mt-1">{errors.homeAddress}</p>}
-        </div>
+        <TextAreaField label="Home Address" value={form.homeAddress} onChange={set('homeAddress')} error={errors.homeAddress} required />
 
-        <div>
-          <label className={labelClass}>Existing Sickness / Illness (optional)</label>
-          <textarea rows={2} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500" value={form.existingSickness} onChange={set('existingSickness')} />
-        </div>
+        <TextAreaField label="Existing Sickness / Illness (optional)" value={form.existingSickness} onChange={set('existingSickness')} />
 
-        <fieldset className="border rounded-lg p-4">
-          <legend className="text-sm font-medium text-gray-700 px-2">Parents / Guardian Information</legend>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
-            <div>
-              <label className={labelClass}>Father's Name <RequiredBadge /></label>
-              <input className={inputClass('fatherName')} value={form.fatherName} onChange={set('fatherName')} />
-              {errors.fatherName && <p className="text-red-500 text-xs mt-1">{errors.fatherName}</p>}
-            </div>
-            <div>
-              <label className={labelClass}>Father's Contact <RequiredBadge /></label>
-              <input className={inputClass('fatherContact')} value={form.fatherContact} onChange={set('fatherContact')} />
-              {errors.fatherContact && <p className="text-red-500 text-xs mt-1">{errors.fatherContact}</p>}
-            </div>
-            <div>
-              <label className={labelClass}>Mother's Name <RequiredBadge /></label>
-              <input className={inputClass('motherName')} value={form.motherName} onChange={set('motherName')} />
-              {errors.motherName && <p className="text-red-500 text-xs mt-1">{errors.motherName}</p>}
-            </div>
-            <div>
-              <label className={labelClass}>Mother's Contact <RequiredBadge /></label>
-              <input className={inputClass('motherContact')} value={form.motherContact} onChange={set('motherContact')} />
-              {errors.motherContact && <p className="text-red-500 text-xs mt-1">{errors.motherContact}</p>}
-            </div>
-          </div>
-        </fieldset>
+        <ParentsFieldset values={form} onChange={set} errors={errors} />
 
-        <div className="border rounded-lg p-4 space-y-4">
-          <div>
-            <label className={labelClass}>Payment Status <RequiredBadge /></label>
-            <div className="flex gap-4 mt-1">
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input
-                  type="radio"
-                  name="paymentStatus"
-                  value="yes"
-                  checked={form.paymentStatus === 'yes'}
-                  onChange={set('paymentStatus')}
-                  className="accent-green-600"
-                />
-                <span className="text-sm">Paid</span>
-              </label>
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input
-                  type="radio"
-                  name="paymentStatus"
-                  value="no"
-                  checked={form.paymentStatus === 'no'}
-                  onChange={set('paymentStatus')}
-                  className="accent-green-600"
-                />
-                <span className="text-sm">Not Paid</span>
-              </label>
-            </div>
-          </div>
-
-          {form.paymentStatus === 'yes' && (
-            <div>
-              <label className={labelClass}>Upload Payment Screenshot <RequiredBadge /></label>
-              <label className="flex items-center gap-2 cursor-pointer border-2 border-dashed border-gray-300 rounded-lg px-4 py-3 hover:border-green-400 transition-colors">
-                <Upload size={20} className="text-gray-400" />
-                <span className="text-sm text-gray-500">
-                  {file ? file.name : 'Choose image (JPEG, PNG, WebP — max 5MB)'}
-                </span>
-                <input
-                  type="file"
-                  accept="image/jpeg,image/png,image/webp"
-                  className="hidden"
-                  onChange={(e) => setFile(e.target.files[0])}
-                />
-              </label>
-              {errors.paymentScreenshot && (
-                <p className="text-red-500 text-xs mt-1">{errors.paymentScreenshot}</p>
-              )}
-            </div>
-          )}
-        </div>
+        <PaymentSection
+          paymentStatus={form.paymentStatus}
+          onChange={set('paymentStatus')}
+          file={file}
+          setFile={setFile}
+          error={errors.paymentScreenshot}
+        />
 
         <button
           type="submit"

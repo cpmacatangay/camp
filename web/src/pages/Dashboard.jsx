@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { io } from 'socket.io-client'
-import { Search, Download, Plus, LogOut, ChevronDown } from 'lucide-react'
+import { Search, Download, Plus, LogOut } from 'lucide-react'
 import {
   getParticipants,
   addParticipant,
@@ -10,12 +10,17 @@ import {
   exportExcel,
 } from '../api/client'
 import { useAuth } from '../context/AuthContext'
+import { useToast } from '../components/Toast'
+import useDebouncedValue from '../hooks/useDebouncedValue'
+import SkeletonRow from '../components/SkeletonRow'
+import EmptyState from '../components/EmptyState'
 import ParticipantModal from '../components/ParticipantModal'
 import ConfirmDialog from '../components/ConfirmDialog'
 
 export default function Dashboard() {
   const [participants, setParticipants] = useState([])
   const [search, setSearch] = useState('')
+  const debouncedSearch = useDebouncedValue(search, 300)
   const [paymentFilter, setPaymentFilter] = useState('')
   const [attendanceFilter, setAttendanceFilter] = useState('')
   const [loading, setLoading] = useState(true)
@@ -23,21 +28,23 @@ export default function Dashboard() {
   const [editing, setEditing] = useState(null)
   const [deleting, setDeleting] = useState(null)
   const { user, logout } = useAuth()
+  const toast = useToast()
   const socketRef = useRef(null)
 
   const fetchParticipants = useCallback(async () => {
     try {
       const params = {}
-      if (search) params.search = search
+      if (debouncedSearch) params.search = debouncedSearch
       if (paymentFilter) params.paymentStatus = paymentFilter
       if (attendanceFilter) params.attendanceStatus = attendanceFilter
       const data = await getParticipants(params)
       setParticipants(data)
     } catch {
+      toast.error('Failed to load participants')
     } finally {
       setLoading(false)
     }
-  }, [search, paymentFilter, attendanceFilter])
+    }, [debouncedSearch, paymentFilter, attendanceFilter, toast])
 
   useEffect(() => {
     fetchParticipants()
@@ -75,7 +82,9 @@ export default function Dashboard() {
       a.download = `participants-${Date.now()}.xlsx`
       a.click()
       URL.revokeObjectURL(url)
+      toast.success('Export downloaded')
     } catch {
+      toast.error('Export failed')
     }
   }
 
@@ -95,7 +104,9 @@ export default function Dashboard() {
       await deleteParticipant(deleting._id)
       setDeleting(null)
       fetchParticipants()
+      toast.success('Participant deleted')
     } catch {
+      toast.error('Delete failed')
     }
   }
 
@@ -109,6 +120,7 @@ export default function Dashboard() {
         )
       )
     } catch {
+      toast.error('Could not update attendance')
     }
   }
 
@@ -173,7 +185,12 @@ export default function Dashboard() {
           </button>
         </div>
 
-        <div className="bg-white rounded-xl shadow-sm border overflow-x-auto">
+        <div className="text-sm text-gray-500">
+          {loading ? '' : `${participants.length} participant${participants.length === 1 ? '' : 's'}`}
+        </div>
+
+        {/* Desktop table */}
+        <div className="hidden md:block bg-white rounded-xl shadow-sm border overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b bg-gray-50 text-left">
@@ -185,17 +202,14 @@ export default function Dashboard() {
             </thead>
             <tbody>
               {loading ? (
-                <tr>
-                  <td colSpan={4} className="px-4 py-8 text-center text-gray-400">
-                    Loading...
-                  </td>
-                </tr>
+                <>
+                  <SkeletonRow cols={4} />
+                  <SkeletonRow cols={4} />
+                  <SkeletonRow cols={4} />
+                  <SkeletonRow cols={4} />
+                </>
               ) : participants.length === 0 ? (
-                <tr>
-                  <td colSpan={4} className="px-4 py-8 text-center text-gray-400">
-                    No participants found
-                  </td>
-                </tr>
+                <EmptyState onAdd={() => setModalOpen(true)} />
               ) : (
                 participants.map((p) => (
                   <tr key={p._id} className="border-b last:border-0 hover:bg-gray-50">
@@ -217,14 +231,13 @@ export default function Dashboard() {
                     <td className="px-4 py-3">
                       <button
                         onClick={() => handleAttendanceToggle(p)}
-                        className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium cursor-pointer border ${
+                        className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium cursor-pointer border ${
                           p.attendanceStatus === 'Present'
                             ? 'bg-blue-100 text-blue-700 border-blue-200 hover:bg-blue-200'
                             : 'bg-gray-100 text-gray-500 border-gray-200 hover:bg-gray-200'
                         }`}
                       >
                         {p.attendanceStatus === 'Present' ? 'Present' : 'Absent'}
-                        <ChevronDown size={12} />
                       </button>
                     </td>
                     <td className="px-4 py-3 text-right">
@@ -248,6 +261,81 @@ export default function Dashboard() {
               )}
             </tbody>
           </table>
+        </div>
+
+        {/* Mobile cards */}
+        <div className="md:hidden space-y-3">
+          {loading ? (
+            Array.from({ length: 4 }).map((_, i) => (
+              <div key={i} className="bg-white rounded-xl shadow-sm border p-4 animate-pulse space-y-2">
+                <div className="h-4 bg-gray-200 rounded w-3/4" />
+                <div className="h-3 bg-gray-200 rounded w-1/2" />
+                <div className="flex gap-2 mt-3">
+                  <div className="h-6 bg-gray-200 rounded-full w-16" />
+                  <div className="h-6 bg-gray-200 rounded-full w-16" />
+                </div>
+              </div>
+            ))
+          ) : participants.length === 0 ? (
+            <div className="bg-white rounded-xl shadow-sm border p-12 text-center">
+              <div className="flex flex-col items-center gap-3">
+                <div className="bg-gray-100 rounded-full p-3">
+                  <Search size={28} className="text-gray-400" />
+                </div>
+                <p className="text-gray-500 text-sm">No participants found</p>
+                <button
+                  onClick={() => setModalOpen(true)}
+                  className="text-sm text-green-700 underline hover:text-green-800 cursor-pointer"
+                >
+                  Add the first participant
+                </button>
+              </div>
+            </div>
+          ) : (
+            participants.map((p) => (
+              <div key={p._id} className="bg-white rounded-xl shadow-sm border p-4 space-y-3">
+                <div>
+                  <div className="font-medium text-gray-800">{p.name}</div>
+                  <div className="text-xs text-gray-400">{p.email}</div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span
+                    className={`inline-block px-2 py-0.5 rounded-full text-xs font-medium ${
+                      p.paymentStatus === 'yes'
+                        ? 'bg-green-100 text-green-700'
+                        : 'bg-yellow-100 text-yellow-700'
+                    }`}
+                  >
+                    {p.paymentStatus === 'yes' ? 'Paid' : 'Not Paid'}
+                  </span>
+                  <button
+                    onClick={() => handleAttendanceToggle(p)}
+                    className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium cursor-pointer border ${
+                      p.attendanceStatus === 'Present'
+                        ? 'bg-blue-100 text-blue-700 border-blue-200 hover:bg-blue-200'
+                        : 'bg-gray-100 text-gray-500 border-gray-200 hover:bg-gray-200'
+                    }`}
+                  >
+                    {p.attendanceStatus === 'Present' ? 'Present' : 'Absent'}
+                  </button>
+                </div>
+                <div className="flex items-center justify-end gap-2 pt-1 border-t">
+                  <button
+                    onClick={() => setEditing(p)}
+                    className="text-xs px-3 py-1.5 rounded-lg border border-gray-300 text-gray-600 hover:bg-gray-100 cursor-pointer"
+                  >
+                    Edit
+                  </button>
+                  <button
+                    onClick={() => setDeleting(p)}
+                    className="text-xs px-3 py-1.5 rounded-lg border border-red-200 text-red-600 hover:bg-red-50 cursor-pointer"
+                  >
+                    Delete
+                  </button>
+                </div>
+              </div>
+            ))
+          )}
         </div>
       </main>
 
