@@ -1,9 +1,9 @@
-import { useLocation, Link } from 'react-router-dom'
-import { Download, CheckCircle, ArrowLeft } from 'lucide-react'
+import { useLocation, Link } from "react-router-dom";
+import { Download, CheckCircle, ArrowLeft } from "lucide-react";
 
 export default function Confirmation() {
-  const { state } = useLocation()
-  const { qrPngBase64, name } = state || {}
+  const { state } = useLocation();
+  const { qrPngBase64, name } = state || {};
 
   if (!state) {
     return (
@@ -13,7 +13,7 @@ export default function Confirmation() {
           Go back to registration
         </Link>
       </div>
-    )
+    );
   }
 
   return (
@@ -26,7 +26,9 @@ export default function Confirmation() {
         </div>
 
         <div>
-          <h1 className="text-2xl font-bold text-green-800">Registration Complete!</h1>
+          <h1 className="text-2xl font-bold text-green-800">
+            Registration Complete!
+          </h1>
           <p className="text-gray-500 mt-1">
             Welcome, <span className="font-semibold text-gray-800">{name}</span>
           </p>
@@ -34,18 +36,23 @@ export default function Confirmation() {
 
         {qrPngBase64 && (
           <div className="bg-gray-50 rounded-xl p-4 inline-block">
-            <img src={qrPngBase64} alt="QR Code" className="w-48 h-48 mx-auto" />
+            <img
+              src={qrPngBase64}
+              alt="QR Code"
+              className="w-48 h-48 mx-auto"
+            />
           </div>
         )}
 
         <p className="text-xs text-gray-400">
-          Present this QR code at check-in for fast attendance
+          Present this QR code when you arrive at the venue for faster
+          attendance.
         </p>
 
         {qrPngBase64 && (
           <a
             href={qrPngBase64}
-            download="camp-qr-code.png"
+            download="TRAILBLAZE.png"
             className="w-full flex items-center justify-center gap-2 bg-green-700 hover:bg-green-800 text-white font-semibold py-3 rounded-lg transition-colors cursor-pointer"
           >
             <Download size={18} />
@@ -62,5 +69,5 @@ export default function Confirmation() {
         </Link>
       </div>
     </div>
-  )
+  );
 }
