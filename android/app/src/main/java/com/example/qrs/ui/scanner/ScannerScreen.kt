@@ -1,8 +1,8 @@
 package com.example.qrs.ui.scanner
 
 import android.Manifest
-import android.content.pm.PackageManager
 import android.annotation.SuppressLint
+import android.content.pm.PackageManager
 import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -10,47 +10,75 @@ import androidx.camera.core.Camera
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.ImageProxy
-import androidx.camera.core.Preview
+import androidx.camera.core.Preview as CameraPreview
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
-import androidx.compose.foundation.border
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ExitToApp
+import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Cancel
+import androidx.compose.material.icons.filled.Error
+import androidx.compose.material.icons.filled.FlashOff
+import androidx.compose.material.icons.filled.FlashOn
+import androidx.compose.material.icons.filled.HourglassEmpty
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.qrs.ui.theme.QRSCheckinTheme
 import com.example.qrs.ui.theme.ScanError
 import com.example.qrs.ui.theme.ScanSuccess
 import com.example.qrs.ui.theme.ScanWarning
@@ -58,6 +86,7 @@ import com.google.mlkit.vision.barcode.BarcodeScanning
 import com.google.mlkit.vision.barcode.common.Barcode
 import com.google.mlkit.vision.common.InputImage
 import java.util.concurrent.Executors
+import kotlinx.coroutines.delay
 
 @SuppressLint("UnsafeOptInUsageError")
 private fun ImageProxy.getImageOrNull() = image
@@ -72,6 +101,7 @@ fun ScannerScreen(
     val scanState by viewModel.scanState.collectAsStateWithLifecycle()
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
+    val haptic = LocalHapticFeedback.current
 
     var hasCameraPermission by remember {
         mutableStateOf(
@@ -95,7 +125,8 @@ fun ScannerScreen(
 
     LaunchedEffect(scanState) {
         if (scanState.isFinal) {
-            kotlinx.coroutines.delay(3000)
+            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+            delay(3000)
             viewModel.resetState()
         }
     }
@@ -128,7 +159,7 @@ fun ScannerScreen(
                         val provider = future.get()
                         cameraProvider = provider
 
-                        val preview = Preview.Builder().build()
+                        val preview = CameraPreview.Builder().build()
                         preview.setSurfaceProvider(previewView.surfaceProvider)
 
                         val barcodeScanner = BarcodeScanning.getClient(
@@ -173,7 +204,7 @@ fun ScannerScreen(
             )
         }
 
-        Column(modifier = Modifier.fillMaxSize()) {
+        Column(modifier = Modifier.fillMaxSize().statusBarsPadding()) {
             TopAppBar(
                 title = { Text("Scanner") },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -182,41 +213,44 @@ fun ScannerScreen(
                 ),
                 actions = {
                     IconButton(onClick = { torchOn = !torchOn }) {
-                        Text(
-                            text = if (torchOn) "🔦" else "💡",
-                            style = MaterialTheme.typography.titleMedium
+                        Icon(
+                            imageVector = if (torchOn) Icons.Filled.FlashOff else Icons.Filled.FlashOn,
+                            contentDescription = "Flash",
+                            tint = Color.White
                         )
                     }
                     IconButton(onClick = onSettings) {
-                        Text("⚙", style = MaterialTheme.typography.titleMedium)
+                        Icon(
+                            imageVector = Icons.Filled.Settings,
+                            contentDescription = "Settings",
+                            tint = Color.White
+                        )
                     }
                     IconButton(onClick = onLogout) {
-                        Text("↩", style = MaterialTheme.typography.titleMedium)
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ExitToApp,
+                            contentDescription = "Logout",
+                            tint = Color.White
+                        )
                     }
                 }
             )
 
             Spacer(Modifier.weight(1f))
 
-            val qrSize = 220.dp
-            Box(
-                modifier = Modifier
-                    .align(Alignment.CenterHorizontally)
-                    .size(qrSize)
-                    .border(3.dp, Color.White, RoundedCornerShape(12.dp)),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = "Place QR inside frame",
-                    color = Color.White.copy(alpha = 0.7f),
-                    textAlign = TextAlign.Center,
-                    fontSize = 12.sp
-                )
-            }
+            ScanFrame(modifier = Modifier.size(240.dp).align(Alignment.CenterHorizontally))
 
             Spacer(Modifier.weight(1f))
 
-            Spacer(Modifier.height(80.dp))
+            Text(
+                text = "Align QR code within the frame",
+                color = Color.White.copy(alpha = 0.7f),
+                textAlign = TextAlign.Center,
+                fontSize = 14.sp,
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 32.dp)
+            )
+
+            Spacer(Modifier.height(100.dp))
         }
 
         ScanResultOverlay(scanState)
@@ -236,31 +270,60 @@ fun ScannerScreen(
 }
 
 @Composable
+private fun ScanFrame(modifier: Modifier = Modifier) {
+    Box(modifier = modifier, contentAlignment = Alignment.Center) {
+        Canvas(modifier = Modifier.fillMaxSize()) {
+            val s = 4.dp.toPx()
+            val l = 28.dp.toPx()
+            val w = size.width
+            val h = size.height
+            val c = Color.White
+
+            drawLine(c, Offset(0f, l), Offset(0f, 0f), s)
+            drawLine(c, Offset(0f, 0f), Offset(l, 0f), s)
+
+            drawLine(c, Offset(w - l, 0f), Offset(w, 0f), s)
+            drawLine(c, Offset(w, 0f), Offset(w, l), s)
+
+            drawLine(c, Offset(0f, h - l), Offset(0f, h), s)
+            drawLine(c, Offset(0f, h), Offset(l, h), s)
+
+            drawLine(c, Offset(w - l, h), Offset(w, h), s)
+            drawLine(c, Offset(w, h - l), Offset(w, h), s)
+        }
+    }
+}
+
+@Composable
 private fun ScanResultOverlay(state: ScanState) {
     when (state) {
-        is ScanState.Success -> ScanResultBanner(
+        is ScanState.Success -> ScanResultContent(
             color = ScanSuccess,
-            icon = "✓",
+            icon = Icons.Filled.CheckCircle,
             title = "Checked In",
-            subtitle = state.name
+            subtitle = state.name,
+            paymentStatus = state.paymentStatus
         )
-        is ScanState.AlreadyIn -> ScanResultBanner(
+        is ScanState.AlreadyIn -> ScanResultContent(
             color = ScanWarning,
-            icon = "⏳",
+            icon = Icons.Filled.HourglassEmpty,
             title = "Already Checked In",
-            subtitle = state.name
+            subtitle = state.name,
+            paymentStatus = null
         )
-        is ScanState.Invalid -> ScanResultBanner(
+        is ScanState.Invalid -> ScanResultContent(
             color = ScanError,
-            icon = "✗",
+            icon = Icons.Filled.Cancel,
             title = "Invalid QR",
-            subtitle = state.message
+            subtitle = state.message,
+            paymentStatus = null
         )
-        is ScanState.Error -> ScanResultBanner(
+        is ScanState.Error -> ScanResultContent(
             color = ScanError,
-            icon = "⚠",
+            icon = Icons.Filled.Error,
             title = "Error",
-            subtitle = state.message
+            subtitle = state.message,
+            paymentStatus = null
         )
         is ScanState.Scanning -> Box(
             modifier = Modifier.fillMaxSize(),
@@ -278,43 +341,186 @@ private fun ScanResultOverlay(state: ScanState) {
 }
 
 @Composable
-private fun ScanResultBanner(
+private fun ScanResultContent(
     color: Color,
-    icon: String,
+    icon: ImageVector,
     title: String,
-    subtitle: String
+    subtitle: String?,
+    paymentStatus: String?
 ) {
+    var progress by remember { mutableFloatStateOf(1f) }
+
+    LaunchedEffect(Unit) {
+        val start = System.currentTimeMillis()
+        while (true) {
+            val elapsed = System.currentTimeMillis() - start
+            if (elapsed >= 3000) {
+                progress = 0f
+                break
+            }
+            progress = 1f - elapsed / 3000f
+            delay(16)
+        }
+    }
+
     Box(
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier
+            .fillMaxSize()
+            .background(color.copy(alpha = 0.88f)),
         contentAlignment = Alignment.Center
     ) {
         Card(
-            modifier = Modifier.padding(32.dp).fillMaxWidth(),
-            shape = RoundedCornerShape(16.dp),
-            colors = CardDefaults.cardColors(containerColor = color)
+            modifier = Modifier
+                .padding(32.dp)
+                .fillMaxWidth(),
+            shape = RoundedCornerShape(20.dp),
+            colors = CardDefaults.cardColors(
+                containerColor = Color.White
+            )
         ) {
             Column(
-                modifier = Modifier.padding(24.dp).fillMaxWidth(),
+                modifier = Modifier.padding(28.dp).fillMaxWidth(),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Text(text = icon, fontSize = 48.sp)
-                Spacer(Modifier.height(12.dp))
+                Box(
+                    modifier = Modifier.size(72.dp).background(color, CircleShape),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = icon,
+                        contentDescription = null,
+                        tint = Color.White,
+                        modifier = Modifier.size(40.dp)
+                    )
+                }
+
+                Spacer(Modifier.height(16.dp))
+
                 Text(
                     text = title,
                     fontSize = 22.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color.White
+                    color = color
                 )
-                if (subtitle.isNotBlank()) {
-                    Spacer(Modifier.height(4.dp))
+
+                if (subtitle != null && subtitle.isNotBlank()) {
+                    Spacer(Modifier.height(6.dp))
                     Text(
                         text = subtitle,
                         fontSize = 16.sp,
-                        color = Color.White.copy(alpha = 0.9f),
+                        color = Color.DarkGray,
                         textAlign = TextAlign.Center
                     )
                 }
+
+                if (paymentStatus != null) {
+                    Spacer(Modifier.height(8.dp))
+                    val isPaid = paymentStatus == "yes"
+                    Card(
+                        colors = CardDefaults.cardColors(
+                            containerColor = if (isPaid) ScanSuccess else ScanWarning
+                        ),
+                        shape = RoundedCornerShape(8.dp)
+                    ) {
+                        Text(
+                            text = if (isPaid) "Paid" else "Unpaid",
+                            color = Color.White,
+                            fontSize = 13.sp,
+                            fontWeight = FontWeight.Medium,
+                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp)
+                        )
+                    }
+                }
+
+                Spacer(Modifier.height(20.dp))
+
+                LinearProgressIndicator(
+                    progress = { progress },
+                    modifier = Modifier.fillMaxWidth().height(4.dp),
+                    color = color,
+                    trackColor = color.copy(alpha = 0.2f),
+                )
             }
         }
+    }
+}
+
+@Preview(showBackground = true, name = "Scan Frame")
+@Composable
+private fun ScanFramePreview() {
+    QRSCheckinTheme {
+        Box(Modifier.fillMaxSize().background(Color.DarkGray), contentAlignment = Alignment.Center) {
+            ScanFrame(modifier = Modifier.size(240.dp))
+        }
+    }
+}
+
+@Preview(showBackground = true, name = "Result: Checked In")
+@Composable
+private fun ScanResultCheckedInPreview() {
+    QRSCheckinTheme {
+        ScanResultContent(
+            color = ScanSuccess,
+            icon = Icons.Filled.CheckCircle,
+            title = "Checked In",
+            subtitle = "Juan Dela Cruz",
+            paymentStatus = "yes"
+        )
+    }
+}
+
+@Preview(showBackground = true, name = "Result: Already In")
+@Composable
+private fun ScanResultAlreadyInPreview() {
+    QRSCheckinTheme {
+        ScanResultContent(
+            color = ScanWarning,
+            icon = Icons.Filled.HourglassEmpty,
+            title = "Already Checked In",
+            subtitle = "Maria Santos",
+            paymentStatus = null
+        )
+    }
+}
+
+@Preview(showBackground = true, name = "Result: Invalid QR")
+@Composable
+private fun ScanResultInvalidPreview() {
+    QRSCheckinTheme {
+        ScanResultContent(
+            color = ScanError,
+            icon = Icons.Filled.Cancel,
+            title = "Invalid QR",
+            subtitle = "QR code not recognized",
+            paymentStatus = null
+        )
+    }
+}
+
+@Preview(showBackground = true, name = "Result: Network Error")
+@Composable
+private fun ScanResultErrorPreview() {
+    QRSCheckinTheme {
+        ScanResultContent(
+            color = ScanError,
+            icon = Icons.Filled.Error,
+            title = "Network Error",
+            subtitle = "Connection refused",
+            paymentStatus = null
+        )
+    }
+}
+
+@Preview(showBackground = true, name = "Result: Checked In (Unpaid)")
+@Composable
+private fun ScanResultCheckedInUnpaidPreview() {
+    QRSCheckinTheme {
+        ScanResultContent(
+            color = ScanSuccess,
+            icon = Icons.Filled.CheckCircle,
+            title = "Checked In",
+            subtitle = "Pedro Garcia",
+            paymentStatus = "no"
+        )
     }
 }

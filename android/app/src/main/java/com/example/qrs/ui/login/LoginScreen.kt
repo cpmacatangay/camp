@@ -1,19 +1,28 @@
 package com.example.qrs.ui.login
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawingPadding
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ErrorOutline
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
@@ -30,17 +39,18 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.platform.LocalFocusManager
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.qrs.BuildConfig
 import com.example.qrs.QRSApp
 import com.example.qrs.data.remote.NetworkModule
+import com.example.qrs.ui.theme.QRSCheckinTheme
 import kotlinx.coroutines.launch
 
 @Composable
@@ -49,7 +59,6 @@ fun LoginScreen(
     onLoginSuccess: () -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
-    val focusManager = LocalFocusManager.current
     val scope = rememberCoroutineScope()
     val settingsStore = QRSApp.instance.settingsStore
 
@@ -101,45 +110,82 @@ fun LoginScreen(
         )
     }
 
+    LoginForm(
+        email = email,
+        onEmailChange = {
+            email = it
+            if (state is LoginState.Error) viewModel.reset()
+        },
+        password = password,
+        onPasswordChange = {
+            password = it
+            if (state is LoginState.Error) viewModel.reset()
+        },
+        passwordVisible = passwordVisible,
+        onTogglePassword = { passwordVisible = !passwordVisible },
+        state = state,
+        onLogin = { viewModel.login(email, password) },
+        onSettingsClick = { showServerDialog = true },
+        onDone = { viewModel.login(email, password) }
+    )
+}
+
+@Composable
+private fun LoginForm(
+    email: String,
+    onEmailChange: (String) -> Unit,
+    password: String,
+    onPasswordChange: (String) -> Unit,
+    passwordVisible: Boolean,
+    onTogglePassword: () -> Unit,
+    state: LoginState,
+    onLogin: () -> Unit,
+    onSettingsClick: () -> Unit,
+    onDone: () -> Unit
+) {
+    val focusManager = LocalFocusManager.current
+
     Column(
         modifier = Modifier
             .fillMaxSize()
+            .safeDrawingPadding()
             .imePadding()
-            .padding(24.dp),
+            .verticalScroll(rememberScrollState())
+            .padding(horizontal = 24.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        Text(
-            text = "QRS Check-In",
-            style = MaterialTheme.typography.headlineLarge
-        )
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = "QRS Check-In",
+                style = MaterialTheme.typography.headlineLarge
+            )
+            IconButton(onClick = onSettingsClick) {
+                Icon(
+                    imageVector = Icons.Filled.Settings,
+                    contentDescription = "Server settings"
+                )
+            }
+        }
 
-        Spacer(Modifier.height(8.dp))
+        Spacer(Modifier.height(6.dp))
 
         Text(
             text = "Staff login",
             style = MaterialTheme.typography.bodyLarge,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
-
-        Spacer(Modifier.height(8.dp))
-
-        Text(
-            text = "Server: $serverUrl",
-            style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
-            textAlign = TextAlign.Center,
-            modifier = Modifier.clickable { showServerDialog = true }
+            modifier = Modifier.fillMaxWidth()
         )
 
-        Spacer(Modifier.height(24.dp))
+        Spacer(Modifier.height(28.dp))
 
         OutlinedTextField(
             value = email,
-            onValueChange = {
-                email = it
-                if (state is LoginState.Error) viewModel.reset()
-            },
+            onValueChange = onEmailChange,
             label = { Text("Email") },
             keyboardOptions = KeyboardOptions(
                 keyboardType = KeyboardType.Email,
@@ -152,14 +198,11 @@ fun LoginScreen(
             modifier = Modifier.fillMaxWidth()
         )
 
-        Spacer(Modifier.height(12.dp))
+        Spacer(Modifier.height(10.dp))
 
         OutlinedTextField(
             value = password,
-            onValueChange = {
-                password = it
-                if (state is LoginState.Error) viewModel.reset()
-            },
+            onValueChange = onPasswordChange,
             label = { Text("Password") },
             visualTransformation = if (passwordVisible) VisualTransformation.None
                 else PasswordVisualTransformation(),
@@ -170,22 +213,22 @@ fun LoginScreen(
             keyboardActions = KeyboardActions(
                 onDone = {
                     focusManager.clearFocus()
-                    viewModel.login(email, password)
+                    onDone()
                 }
             ),
             singleLine = true,
             modifier = Modifier.fillMaxWidth(),
             trailingIcon = {
-                TextButton(onClick = { passwordVisible = !passwordVisible }) {
+                TextButton(onClick = onTogglePassword) {
                     Text(if (passwordVisible) "Hide" else "Show")
                 }
             }
         )
 
-        Spacer(Modifier.height(24.dp))
+        Spacer(Modifier.height(26.dp))
 
         Button(
-            onClick = { viewModel.login(email, password) },
+            onClick = onLogin,
             enabled = state !is LoginState.Loading,
             modifier = Modifier.fillMaxWidth().height(50.dp)
         ) {
@@ -202,11 +245,99 @@ fun LoginScreen(
 
         if (state is LoginState.Error) {
             Spacer(Modifier.height(12.dp))
-            Text(
-                text = (state as LoginState.Error).message,
-                color = MaterialTheme.colorScheme.error,
-                style = MaterialTheme.typography.bodySmall
-            )
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Icon(
+                    imageVector = Icons.Filled.ErrorOutline,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.error,
+                    modifier = Modifier.height(16.dp)
+                )
+                Spacer(Modifier.width(6.dp))
+                Text(
+                    text = (state as LoginState.Error).message,
+                    color = MaterialTheme.colorScheme.error,
+                    style = MaterialTheme.typography.labelMedium
+                )
+            }
         }
+    }
+}
+
+@Preview(showBackground = true, showSystemUi = true, name = "Login - Idle")
+@Composable
+private fun LoginFormIdlePreview() {
+    QRSCheckinTheme {
+        LoginForm(
+            email = "",
+            onEmailChange = {},
+            password = "",
+            onPasswordChange = {},
+            passwordVisible = false,
+            onTogglePassword = {},
+            state = LoginState.Idle,
+            onLogin = {},
+            onSettingsClick = {},
+            onDone = {}
+        )
+    }
+}
+
+@Preview(showBackground = true, showSystemUi = true, name = "Login - Filled")
+@Composable
+private fun LoginFormFilledPreview() {
+    QRSCheckinTheme {
+        LoginForm(
+            email = "staff@camp.com",
+            onEmailChange = {},
+            password = "mypassword",
+            onPasswordChange = {},
+            passwordVisible = false,
+            onTogglePassword = {},
+            state = LoginState.Idle,
+            onLogin = {},
+            onSettingsClick = {},
+            onDone = {}
+        )
+    }
+}
+
+@Preview(showBackground = true, showSystemUi = true, name = "Login - Loading")
+@Composable
+private fun LoginFormLoadingPreview() {
+    QRSCheckinTheme {
+        LoginForm(
+            email = "staff@camp.com",
+            onEmailChange = {},
+            password = "mypassword",
+            onPasswordChange = {},
+            passwordVisible = false,
+            onTogglePassword = {},
+            state = LoginState.Loading,
+            onLogin = {},
+            onSettingsClick = {},
+            onDone = {}
+        )
+    }
+}
+
+@Preview(showBackground = true, showSystemUi = true, name = "Login - Error")
+@Composable
+private fun LoginFormErrorPreview() {
+    QRSCheckinTheme {
+        LoginForm(
+            email = "wrong@email.com",
+            onEmailChange = {},
+            password = "wrong",
+            onPasswordChange = {},
+            passwordVisible = false,
+            onTogglePassword = {},
+            state = LoginState.Error("Invalid email or password"),
+            onLogin = {},
+            onSettingsClick = {},
+            onDone = {}
+        )
     }
 }

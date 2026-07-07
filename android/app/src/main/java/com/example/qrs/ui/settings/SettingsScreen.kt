@@ -6,10 +6,15 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ExitToApp
+import androidx.compose.material.icons.filled.Dns
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
@@ -27,10 +32,14 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.qrs.BuildConfig
 import com.example.qrs.QRSApp
 import com.example.qrs.data.remote.NetworkModule
+import com.example.qrs.ui.theme.QRSCheckinTheme
+import com.example.qrs.ui.theme.OnSecondaryContainer
+import com.example.qrs.ui.theme.SecondaryContainer
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -57,13 +66,51 @@ fun SettingsScreen(
         saved = false
     }
 
+    SettingsContent(
+        email = email,
+        role = role,
+        urlInput = urlInput,
+        onUrlInputChange = {
+            urlInput = it
+            saved = false
+        },
+        saved = saved,
+        onSave = {
+            scope.launch {
+                settingsStore.setServerBaseUrl(urlInput)
+                NetworkModule.baseUrl = urlInput
+                saved = true
+            }
+        },
+        saveEnabled = urlInput != serverUrl,
+        onLogout = onLogout,
+        onBack = onBack
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun SettingsContent(
+    email: String,
+    role: String,
+    urlInput: String,
+    onUrlInputChange: (String) -> Unit,
+    saved: Boolean,
+    onSave: () -> Unit,
+    saveEnabled: Boolean,
+    onLogout: () -> Unit,
+    onBack: () -> Unit
+) {
     Scaffold(
         topBar = {
             TopAppBar(
                 title = { Text("Settings") },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Text("←", style = MaterialTheme.typography.titleMedium)
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = "Back"
+                        )
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -78,31 +125,33 @@ fun SettingsScreen(
                 .padding(padding)
                 .padding(16.dp)
         ) {
+            Text(
+                text = "Account",
+                style = MaterialTheme.typography.titleSmall
+            )
+            Spacer(Modifier.height(8.dp))
+
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceVariant
+                    containerColor = SecondaryContainer
                 )
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
                     Text(
-                        text = "Account",
-                        style = MaterialTheme.typography.titleSmall
-                    )
-                    Spacer(Modifier.height(8.dp))
-                    Text(
                         text = email,
-                        style = MaterialTheme.typography.bodyLarge
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = OnSecondaryContainer
                     )
                     Text(
                         text = "Role: $role",
                         style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        color = OnSecondaryContainer.copy(alpha = 0.7f)
                     )
                 }
             }
 
-            Spacer(Modifier.height(24.dp))
+            Spacer(Modifier.height(28.dp))
 
             Text(
                 text = "Server URL",
@@ -112,12 +161,15 @@ fun SettingsScreen(
 
             OutlinedTextField(
                 value = urlInput,
-                onValueChange = {
-                    urlInput = it
-                    saved = false
-                },
+                onValueChange = onUrlInputChange,
                 label = { Text("Base URL") },
-                placeholder = { Text("http://10.0.2.2:5000") },
+                placeholder = { Text("http://192.168.1.13:5000") },
+                leadingIcon = {
+                    Icon(
+                        imageVector = Icons.Filled.Dns,
+                        contentDescription = null
+                    )
+                },
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth()
             )
@@ -125,14 +177,8 @@ fun SettingsScreen(
             Spacer(Modifier.height(8.dp))
 
             Button(
-                onClick = {
-                    scope.launch {
-                        settingsStore.setServerBaseUrl(urlInput)
-                        NetworkModule.baseUrl = urlInput
-                        saved = true
-                    }
-                },
-                enabled = urlInput != serverUrl
+                onClick = onSave,
+                enabled = saveEnabled
             ) {
                 Text(if (saved) "Saved!" else "Save")
             }
@@ -143,8 +189,49 @@ fun SettingsScreen(
                 onClick = onLogout,
                 modifier = Modifier.fillMaxWidth()
             ) {
+                Icon(
+                    imageVector = Icons.AutoMirrored.Filled.ExitToApp,
+                    contentDescription = null,
+                    modifier = Modifier.padding(end = 8.dp)
+                )
                 Text("Logout")
             }
         }
+    }
+}
+
+@Preview(showBackground = true, showSystemUi = true, name = "Settings - Admin")
+@Composable
+private fun SettingsAdminPreview() {
+    QRSCheckinTheme {
+        SettingsContent(
+            email = "admin@camp.com",
+            role = "admin",
+            urlInput = "http://192.168.1.13:5000",
+            onUrlInputChange = {},
+            saved = false,
+            onSave = {},
+            saveEnabled = false,
+            onLogout = {},
+            onBack = {}
+        )
+    }
+}
+
+@Preview(showBackground = true, showSystemUi = true, name = "Settings - Staff")
+@Composable
+private fun SettingsStaffPreview() {
+    QRSCheckinTheme {
+        SettingsContent(
+            email = "scanner@camp.com",
+            role = "staff",
+            urlInput = "http://localhost:5000",
+            onUrlInputChange = {},
+            saved = true,
+            onSave = {},
+            saveEnabled = false,
+            onLogout = {},
+            onBack = {}
+        )
     }
 }
