@@ -30,7 +30,9 @@ export default function Register() {
   const [file, setFile] = useState(null);
   const [errors, setErrors] = useState({});
   const [submitting, setSubmitting] = useState(false);
-  useEffect(() => { document.title = "TRAILBLAZE - Register"; }, []);
+  useEffect(() => {
+    document.title = "TRAILBLAZE - Register";
+  }, []);
   const toast = useToast();
   const navigate = useNavigate();
 
@@ -57,22 +59,46 @@ export default function Register() {
   function validateField(field, formValues) {
     const errs = {};
     const required = [
-      "name", "homeAddress", "birthDate", "contactNumber", "email",
-      "nickname", "facebookName", "fatherName", "fatherContact",
-      "motherName", "motherContact",
+      "name",
+      "homeAddress",
+      "birthDate",
+      "contactNumber",
+      "email",
+      "nickname",
+      "facebookName",
+      "fatherName",
+      "fatherContact",
+      "motherName",
+      "motherContact",
     ];
     if (required.includes(field) && !formValues[field].trim()) {
       errs[field] = "This field is required";
     }
-    if (field === "email" && formValues.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formValues.email)) {
+    if (
+      field === "email" &&
+      formValues.email &&
+      !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formValues.email)
+    ) {
       errs.email = "Invalid email address";
     }
-    if (field === "email" && formValues.email && /\.(con|co\.uk|neto)$/i.test(formValues.email)) {
+    if (
+      field === "email" &&
+      formValues.email &&
+      /\.(con|co\.uk|neto)$/i.test(formValues.email)
+    ) {
       errs.email = "Did you mean .com?";
     }
-    function cleanPhone(v) { return v.replace(/[\s\-()]/g, ""); }
+    function cleanPhone(v) {
+      return v.replace(/[\s\-()]/g, "");
+    }
     const PH_MOBILE = /^(?:\+63|0)9\d{9}$/;
-    if ((field === "contactNumber" || field === "fatherContact" || field === "motherContact") && formValues[field] && !PH_MOBILE.test(cleanPhone(formValues[field]))) {
+    if (
+      (field === "contactNumber" ||
+        field === "fatherContact" ||
+        field === "motherContact") &&
+      formValues[field] &&
+      !PH_MOBILE.test(cleanPhone(formValues[field]))
+    ) {
       errs[field] = "Enter a valid PH mobile number (e.g., 09171234567)";
     }
     if (field === "birthDate" && formValues.birthDate) {
@@ -92,9 +118,17 @@ export default function Register() {
       }
     }
     const nameFieldsNoDigits = ["name", "nickname", "fatherName", "motherName"];
-    if (nameFieldsNoDigits.includes(field) && formValues[field] && /\d/.test(formValues[field])) {
+    if (
+      nameFieldsNoDigits.includes(field) &&
+      formValues[field] &&
+      /\d/.test(formValues[field])
+    ) {
       errs[field] = "Should not contain numbers";
-    } else if (nameFieldsNoDigits.includes(field) && formValues[field] && formValues[field].trim().length < 2) {
+    } else if (
+      nameFieldsNoDigits.includes(field) &&
+      formValues[field] &&
+      formValues[field].trim().length < 2
+    ) {
       errs[field] = "Must be at least 2 characters";
     }
     if (field === "facebookName" && formValues.facebookName) {
@@ -108,7 +142,11 @@ export default function Register() {
         errs.facebookName = "Enter a name, not an email";
       }
     }
-    if (field === "homeAddress" && formValues.homeAddress && formValues.homeAddress.trim().length < 5) {
+    if (
+      field === "homeAddress" &&
+      formValues.homeAddress &&
+      formValues.homeAddress.trim().length < 5
+    ) {
       errs.homeAddress = "Enter a full address (at least 5 characters)";
     }
     return errs;
@@ -276,7 +314,7 @@ export default function Register() {
     <div className="max-w-2xl mx-auto px-4 py-10">
       <div className="text-center mb-6 sm:mb-8">
         <h1 className="text-2xl sm:text-3xl font-bold text-green-800">
-          Camp Registration
+          TRAILBLAZE
         </h1>
         <p className="text-gray-500 mt-1">
           Fill in all required fields to register
@@ -360,7 +398,12 @@ export default function Register() {
           onChange={set("existingSickness")}
         />
 
-        <ParentsFieldset values={form} onChange={set} errors={errors} onBlur={handleBlur} />
+        <ParentsFieldset
+          values={form}
+          onChange={set}
+          errors={errors}
+          onBlur={handleBlur}
+        />
 
         <PaymentSection
           paymentStatus={form.paymentStatus}
