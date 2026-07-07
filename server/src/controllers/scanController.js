@@ -20,12 +20,19 @@ async function scan(req, res, next) {
     participant.attendanceStatus = 'Present';
     await participant.save();
 
+    const presentCount = await Participant.countDocuments({ attendanceStatus: 'Present' });
+
     const io = req.app.get('io');
     if (io) {
       io.to('admin').emit('attendance:updated', {
         participantId: participant._id,
         name: participant.name,
         attendanceStatus: participant.attendanceStatus,
+        paymentStatus: participant.paymentStatus,
+        presentCount,
+        scannedBy: req.user.email,
+        source: 'scan',
+        timestamp: new Date().toISOString(),
       });
     }
 

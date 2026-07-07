@@ -19,9 +19,11 @@ async function list(req, res, next) {
     const limitNum = Math.max(1, Math.min(100, parseInt(limit, 10) || 10));
     const skip = (pageNum - 1) * limitNum;
 
-    const [participants, total] = await Promise.all([
+    const [participants, total, presentCount, absentCount] = await Promise.all([
       Participant.find(filter).sort({ createdAt: -1 }).skip(skip).limit(limitNum),
       Participant.countDocuments(filter),
+      Participant.countDocuments({ attendanceStatus: 'Present' }),
+      Participant.countDocuments({ attendanceStatus: 'Absent' }),
     ]);
 
     res.json({
@@ -29,6 +31,8 @@ async function list(req, res, next) {
       total,
       page: pageNum,
       totalPages: Math.ceil(total / limitNum),
+      presentCount,
+      absentCount,
     });
   } catch (err) {
     next(err);
@@ -114,12 +118,19 @@ async function setAttendance(req, res, next) {
       return res.status(404).json({ message: 'Participant not found' });
     }
 
+    const presentCount = await Participant.countDocuments({ attendanceStatus: 'Present' });
+
     const io = req.app.get('io');
     if (io) {
       io.to('admin').emit('attendance:updated', {
         participantId: participant._id,
         name: participant.name,
         attendanceStatus: participant.attendanceStatus,
+        paymentStatus: participant.paymentStatus,
+        presentCount,
+        scannedBy: req.user.email,
+        source: 'manual',
+        timestamp: new Date().toISOString(),
       });
     }
 
