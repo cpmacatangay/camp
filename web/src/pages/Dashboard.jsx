@@ -42,6 +42,8 @@ export default function Dashboard() {
   const [absentCount, setAbsentCount] = useState(0);
   const hasConnectedBefore = useRef(false);
 
+  useEffect(() => { document.title = "TRAILBLAZE - Admin"; }, []);
+
   // Refs for socket handler to read latest state without stale closures
   const attendanceFilterRef = useRef(attendanceFilter);
   const participantsRef = useRef(participants);

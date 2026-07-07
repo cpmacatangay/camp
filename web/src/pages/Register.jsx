@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Send } from "lucide-react";
 import { registerParticipant } from "../api/client";
@@ -30,6 +30,7 @@ export default function Register() {
   const [file, setFile] = useState(null);
   const [errors, setErrors] = useState({});
   const [submitting, setSubmitting] = useState(false);
+  useEffect(() => { document.title = "TRAILBLAZE - Register"; }, []);
   const toast = useToast();
   const navigate = useNavigate();
 
