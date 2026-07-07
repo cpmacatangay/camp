@@ -48,13 +48,6 @@ async function update(req, res, next) {
       updates.paymentScreenshotUrl = `/uploads/${req.file.filename}`;
     }
 
-    if (updates.paymentStatus === 'yes' && !updates.paymentScreenshotUrl && !req.file) {
-      const existing = await Participant.findById(id);
-      if (!existing || !existing.paymentScreenshotUrl) {
-        return res.status(400).json({ message: 'Payment screenshot required when payment status is Yes' });
-      }
-    }
-
     const participant = await Participant.findByIdAndUpdate(id, updates, {
       new: true,
       runValidators: true,
@@ -71,10 +64,7 @@ async function update(req, res, next) {
 async function addByAdmin(req, res, next) {
   try {
     const body = { ...req.body };
-    if (body.paymentStatus === 'yes') {
-      if (!req.file) {
-        return res.status(400).json({ message: 'Payment screenshot required when payment status is Yes' });
-      }
+    if (body.paymentStatus === 'yes' && req.file) {
       body.paymentScreenshotUrl = `/uploads/${req.file.filename}`;
     } else {
       body.paymentScreenshotUrl = '';

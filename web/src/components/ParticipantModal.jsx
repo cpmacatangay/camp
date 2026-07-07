@@ -64,9 +64,6 @@ export default function ParticipantModal({ open, participant, onSave, onClose })
     if (form.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) {
       errs.email = 'Invalid email address'
     }
-    if (form.paymentStatus === 'yes' && !file && !isEdit) {
-      errs.paymentScreenshot = 'Payment screenshot is required'
-    }
     if (file && file.size > 5 * 1024 * 1024) {
       errs.paymentScreenshot = 'File must be under 5MB'
     }
@@ -141,6 +138,7 @@ export default function ParticipantModal({ open, participant, onSave, onClose })
             error={errors.paymentScreenshot}
             isEdit={isEdit}
             existingScreenshotUrl={isEdit ? participant.paymentScreenshotUrl : undefined}
+            screenshotRequired={false}
           />
 
           <div className="flex flex-col-reverse sm:flex-row justify-end gap-3 pt-2">

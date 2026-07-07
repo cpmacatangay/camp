@@ -4,7 +4,7 @@ import RequiredBadge from '../RequiredBadge'
 const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp']
 const MAX_SIZE = 5 * 1024 * 1024
 
-export default function PaymentSection({ paymentStatus, onChange, file, setFile, error, isEdit, existingScreenshotUrl }) {
+export default function PaymentSection({ paymentStatus, onChange, file, setFile, error, isEdit, existingScreenshotUrl, screenshotRequired = true }) {
   function validateAndSet(selected) {
     if (!selected) {
       setFile(null)
@@ -57,7 +57,7 @@ export default function PaymentSection({ paymentStatus, onChange, file, setFile,
       {paymentStatus === 'yes' && (
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
-            {isEdit ? 'Update Payment Screenshot (leave empty to keep current)' : <>Payment Screenshot <RequiredBadge /></>}
+            {isEdit ? 'Update Payment Screenshot (leave empty to keep current)' : <>Payment Screenshot {screenshotRequired && <RequiredBadge />}</>}
           </label>
           {existingScreenshotUrl && isEdit && (
             <img
