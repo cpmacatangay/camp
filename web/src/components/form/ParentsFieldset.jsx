@@ -1,6 +1,6 @@
 import TextField from './TextField'
 
-export default function ParentsFieldset({ values, onChange, errors }) {
+export default function ParentsFieldset({ values, onChange, errors, onBlur }) {
   const fields = [
     { name: 'fatherName', label: "Father's Name" },
     { name: 'fatherContact', label: "Father's Contact" },
@@ -18,6 +18,7 @@ export default function ParentsFieldset({ values, onChange, errors }) {
             label={f.label}
             value={values[f.name]}
             onChange={onChange(f.name)}
+            onBlur={onBlur ? () => onBlur(f.name) : undefined}
             error={errors?.[f.name]}
             required
           />

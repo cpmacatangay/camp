@@ -1,4 +1,4 @@
-export default function DateField({ label, value, onChange, error, required }) {
+export default function DateField({ label, value, onChange, onBlur, error, required }) {
   const inputClass = `w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 ${
     error ? 'border-red-400 bg-red-50' : 'border-gray-300'
   }`
@@ -13,6 +13,7 @@ export default function DateField({ label, value, onChange, error, required }) {
         type="date"
         value={value}
         onChange={onChange}
+        onBlur={onBlur}
         className={inputClass}
         required={required}
       />

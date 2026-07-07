@@ -1,6 +1,6 @@
 import RequiredBadge from '../RequiredBadge'
 
-export default function TextAreaField({ label, value, onChange, error, required, rows = 2 }) {
+export default function TextAreaField({ label, value, onChange, onBlur, error, required, rows = 2 }) {
   const inputClass = `w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 ${
     error ? 'border-red-400 bg-red-50' : 'border-gray-300'
   }`
@@ -15,6 +15,7 @@ export default function TextAreaField({ label, value, onChange, error, required,
         rows={rows}
         value={value}
         onChange={onChange}
+        onBlur={onBlur}
         className={inputClass}
         required={required}
       />
