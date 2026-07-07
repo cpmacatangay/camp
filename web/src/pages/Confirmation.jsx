@@ -52,7 +52,7 @@ export default function Confirmation() {
         {qrPngBase64 && (
           <a
             href={qrPngBase64}
-            download="TRAILBLAZE.png"
+            download={`${name.replace(/[^a-zA-Z0-9_-]/g, "-")}-QR.png`}
             className="w-full flex items-center justify-center gap-2 bg-green-700 hover:bg-green-800 text-white font-semibold py-3 rounded-lg transition-colors cursor-pointer"
           >
             <Download size={18} />
