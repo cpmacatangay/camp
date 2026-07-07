@@ -228,7 +228,7 @@ export default function Dashboard() {
   }
 
   const filterClass =
-    "border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 bg-white";
+    "border border-gray-300 rounded-lg px-3 py-2.5 text-base focus:outline-none focus:ring-2 focus:ring-green-500 bg-white";
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -288,7 +288,7 @@ export default function Dashboard() {
                 placeholder="Search name, email, contact..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="w-full pl-9 pr-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+                className="w-full pl-9 pr-3 py-2.5 border border-gray-300 rounded-lg text-base focus:outline-none focus:ring-2 focus:ring-green-500"
               />
             </div>
             <select
@@ -449,13 +449,13 @@ export default function Dashboard() {
                       <div className="flex items-center justify-end gap-2">
                         <button
                           onClick={() => setEditing(p)}
-                          className="text-xs px-3 py-1.5 rounded-lg border border-gray-300 text-gray-600 hover:bg-gray-100 cursor-pointer"
+                          className="text-sm px-3 py-1.5 rounded-lg border border-gray-300 text-gray-600 hover:bg-gray-100 cursor-pointer"
                         >
                           Edit
                         </button>
                         <button
                           onClick={() => setDeleting(p)}
-                          className="text-xs px-3 py-1.5 rounded-lg border border-red-200 text-red-600 hover:bg-red-50 cursor-pointer"
+                          className="text-sm px-3 py-1.5 rounded-lg border border-red-200 text-red-600 hover:bg-red-50 cursor-pointer"
                         >
                           Delete
                         </button>
@@ -541,13 +541,13 @@ export default function Dashboard() {
                 <div className="flex items-center justify-end gap-2 pt-1 border-t">
                   <button
                     onClick={() => setEditing(p)}
-                    className="text-xs px-3 py-1.5 rounded-lg border border-gray-300 text-gray-600 hover:bg-gray-100 cursor-pointer"
+                    className="text-sm px-3 py-1.5 rounded-lg border border-gray-300 text-gray-600 hover:bg-gray-100 cursor-pointer"
                   >
                     Edit
                   </button>
                   <button
                     onClick={() => setDeleting(p)}
-                    className="text-xs px-3 py-1.5 rounded-lg border border-red-200 text-red-600 hover:bg-red-50 cursor-pointer"
+                    className="text-sm px-3 py-1.5 rounded-lg border border-red-200 text-red-600 hover:bg-red-50 cursor-pointer"
                   >
                     Delete
                   </button>

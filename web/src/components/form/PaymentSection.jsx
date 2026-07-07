@@ -38,7 +38,7 @@ export default function PaymentSection({ paymentStatus, onChange, file, setFile,
               onChange={onChange}
               className="accent-green-600"
             />
-            <span className="text-sm">Paid</span>
+            <span className="text-base">Paid</span>
           </label>
           <label className="flex items-center gap-2 cursor-pointer">
             <input
@@ -49,7 +49,7 @@ export default function PaymentSection({ paymentStatus, onChange, file, setFile,
               onChange={onChange}
               className="accent-green-600"
             />
-            <span className="text-sm">Not Paid</span>
+            <span className="text-base">Not Paid</span>
           </label>
         </div>
       </div>
@@ -68,7 +68,7 @@ export default function PaymentSection({ paymentStatus, onChange, file, setFile,
           )}
           <label className="flex items-center gap-2 cursor-pointer border-2 border-dashed border-gray-300 rounded-lg px-4 py-3 hover:border-green-400 transition-colors">
             <Upload size={20} className="text-gray-400" />
-            <span className="text-sm text-gray-500">
+            <span className="text-base text-gray-500">
               {file ? file.name : 'Choose image (JPEG, PNG, WebP — max 5MB)'}
             </span>
             <input
@@ -79,7 +79,7 @@ export default function PaymentSection({ paymentStatus, onChange, file, setFile,
             />
           </label>
           {fileError && (
-            <p className="text-red-500 text-xs mt-1">{fileError}</p>
+            <p className="text-red-500 text-sm mt-1">{fileError}</p>
           )}
         </div>
       )}
