@@ -33,6 +33,17 @@ export default function Dashboard() {
   const { user, logout } = useAuth();
   const toast = useToast();
   const socketRef = useRef(null);
+  const [socketStatus, setSocketStatus] = useState("connecting");
+  const [flashedId, setFlashedId] = useState(null);
+  const [presentCount, setPresentCount] = useState(0);
+  const [absentCount, setAbsentCount] = useState(0);
+  const hasConnectedBefore = useRef(false);
+
+  // Refs for socket handler to read latest state without stale closures
+  const attendanceFilterRef = useRef(attendanceFilter);
+  const participantsRef = useRef(participants);
+  useEffect(() => { attendanceFilterRef.current = attendanceFilter; }, [attendanceFilter]);
+  useEffect(() => { participantsRef.current = participants; }, [participants]);
 
   const fetchParticipants = useCallback(async () => {
     try {
@@ -44,6 +55,10 @@ export default function Dashboard() {
       setParticipants(data.participants);
       setTotal(data.total);
       setTotalPages(data.totalPages);
+      if (data.presentCount !== undefined) {
+        setPresentCount(data.presentCount);
+        setAbsentCount(data.absentCount);
+      }
     } catch {
       toast.error("Failed to load participants");
     } finally {
@@ -65,18 +80,61 @@ export default function Dashboard() {
       auth: { token: user.token },
     });
     socketRef.current = socket;
-    socket.on("attendance:updated", (data) => {
-      setParticipants((prev) =>
-        prev.map((p) =>
-          p._id === data.participantId
-            ? { ...p, attendanceStatus: data.attendanceStatus }
-            : p,
-        ),
-      );
+
+    socket.on("connect", () => {
+      if (hasConnectedBefore.current) fetchParticipants();
+      hasConnectedBefore.current = true;
+      setSocketStatus("connected");
     });
-    socket.on("connect_error", () => {});
+
+    socket.on("disconnect", () => {
+      setSocketStatus("disconnected");
+    });
+
+    socket.on("connect_error", () => {
+      setSocketStatus("disconnected");
+    });
+
+    socket.on("attendance:updated", (data) => {
+      const currentFilter = attendanceFilterRef.current;
+      const exists = participantsRef.current.some(
+        (p) => p._id === data.participantId,
+      );
+
+      if (!exists && (!currentFilter || currentFilter === data.attendanceStatus)) {
+        // Participant is not on the current page but should be visible — re-fetch
+        fetchParticipants();
+      } else if (exists) {
+        // Update or remove locally
+        setParticipants((prev) => {
+          if (currentFilter && currentFilter !== data.attendanceStatus) {
+            return prev.filter((p) => p._id !== data.participantId);
+          }
+          return prev.map((p) =>
+            p._id === data.participantId
+              ? { ...p, attendanceStatus: data.attendanceStatus }
+              : p,
+          );
+        });
+      }
+
+      // Flash highlight
+      setFlashedId(data.participantId);
+      setTimeout(() => setFlashedId(null), 2000);
+
+      // Live counter
+      if (data.presentCount !== undefined) {
+        setPresentCount(data.presentCount);
+      }
+
+      // Toast for scan events
+      if (data.source === "scan") {
+        toast.success(`${data.name} checked in`);
+      }
+    });
+
     return () => socket.close();
-  }, [user.token]);
+  }, [user.token, fetchParticipants, toast]);
 
   function handleLogout() {
     logout();
@@ -142,7 +200,25 @@ export default function Dashboard() {
         <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
           <h1 className="text-xl font-bold text-green-800">TRAILBLAZE</h1>
           <div className="flex items-center gap-2 sm:gap-3">
-            <span className="hidden sm:inline text-sm text-gray-500">
+            <span className="hidden sm:inline-flex items-center gap-1.5 text-sm text-gray-500">
+              <span
+                className={`inline-block w-2 h-2 rounded-full ${
+                  socketStatus === "connected"
+                    ? "bg-green-500"
+                    : socketStatus === "connecting"
+                      ? "bg-yellow-400"
+                      : "bg-red-500"
+                }`}
+              />
+              <span>
+                {socketStatus === "connected"
+                  ? "Live"
+                  : socketStatus === "connecting"
+                    ? "Connecting..."
+                    : "Disconnected"}
+              </span>
+            </span>
+            <span className="hidden sm:inline text-sm text-gray-500 ml-2">
               {user.email}
             </span>
             <button
@@ -207,6 +283,31 @@ export default function Dashboard() {
           </button>
         </div>
 
+        {/* Live attendance counter */}
+        <div className="bg-white rounded-xl shadow-sm border p-4">
+          <div className="flex items-center gap-4">
+            <div className="flex items-baseline gap-1">
+              <span className="text-2xl font-bold text-green-700">
+                {presentCount}
+              </span>
+              <span className="text-sm text-gray-500">
+                / {presentCount + absentCount} Present
+              </span>
+            </div>
+            <div className="flex-1 h-2.5 bg-gray-100 rounded-full overflow-hidden">
+              <div
+                className="h-full bg-green-500 rounded-full transition-all duration-500"
+                style={{
+                  width:
+                    presentCount + absentCount > 0
+                      ? `${(presentCount / (presentCount + absentCount)) * 100}%`
+                      : "0%",
+                }}
+              />
+            </div>
+          </div>
+        </div>
+
         <div className="text-sm text-gray-500">
           {loading
             ? ""
@@ -248,7 +349,7 @@ export default function Dashboard() {
                 participants.map((p) => (
                   <tr
                     key={p._id}
-                    className="border-b last:border-0 hover:bg-gray-50"
+                    className={`border-b last:border-0 hover:bg-gray-50 ${flashedId === p._id ? "animate-flash-green" : ""}`}
                   >
                     <td className="px-4 py-3">
                       <div className="font-medium text-gray-800">{p.name}</div>
@@ -337,7 +438,7 @@ export default function Dashboard() {
             participants.map((p) => (
               <div
                 key={p._id}
-                className="bg-white rounded-xl shadow-sm border p-4 space-y-3"
+                className={`bg-white rounded-xl shadow-sm border p-4 space-y-3 ${flashedId === p._id ? "animate-flash-green" : ""}`}
               >
                 <div>
                   <div className="font-medium text-gray-800">{p.name}</div>
