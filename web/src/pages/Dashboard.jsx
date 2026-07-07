@@ -6,6 +6,7 @@ import {
   addParticipant,
   updateParticipant,
   deleteParticipant,
+  deleteParticipants,
   setAttendance,
   exportExcel,
 } from "../api/client";
@@ -30,6 +31,8 @@ export default function Dashboard() {
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState(null);
   const [deleting, setDeleting] = useState(null);
+  const [selectedIds, setSelectedIds] = useState(new Set());
+  const [bulkDeleting, setBulkDeleting] = useState(false);
   const { user, logout } = useAuth();
   const toast = useToast();
   const socketRef = useRef(null);
@@ -177,6 +180,39 @@ export default function Dashboard() {
     }
   }
 
+  function toggleSelect(id) {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }
+
+  function toggleSelectAll() {
+    setSelectedIds((prev) =>
+      prev.size === participants.length
+        ? new Set()
+        : new Set(participants.map((p) => p._id)),
+    );
+  }
+
+  async function handleBulkDelete() {
+    try {
+      setBulkDeleting(true);
+      await deleteParticipants(Array.from(selectedIds));
+      setSelectedIds(new Set());
+      setBulkDeleting(false);
+      fetchParticipants();
+      toast.success(
+        `Deleted ${selectedIds.size} participant${selectedIds.size === 1 ? "" : "s"}`,
+      );
+    } catch {
+      setBulkDeleting(false);
+      toast.error("Bulk delete failed");
+    }
+  }
+
   async function handleAttendanceToggle(p) {
     const newStatus = p.attendanceStatus === "Present" ? "Absent" : "Present";
     try {
@@ -274,13 +310,23 @@ export default function Dashboard() {
               <option value="Absent">Absent</option>
             </select>
           </div>
-          <button
-            onClick={() => setModalOpen(true)}
-            className="w-full sm:w-auto flex items-center justify-center gap-1.5 bg-green-700 hover:bg-green-800 text-white text-sm font-semibold px-5 py-3 rounded-lg transition-colors cursor-pointer min-h-[48px]"
-          >
-            <Plus size={16} />
-            Add Participant
-          </button>
+          <div className="flex items-center gap-2 w-full sm:w-auto">
+            {selectedIds.size > 0 && (
+              <button
+                onClick={() => setBulkDeleting(true)}
+                className="flex items-center justify-center gap-1.5 bg-red-600 hover:bg-red-700 text-white text-sm font-semibold px-4 py-3 rounded-lg transition-colors cursor-pointer min-h-[48px]"
+              >
+                Delete ({selectedIds.size})
+              </button>
+            )}
+            <button
+              onClick={() => setModalOpen(true)}
+              className="flex items-center justify-center gap-1.5 bg-green-700 hover:bg-green-800 text-white text-sm font-semibold px-5 py-3 rounded-lg transition-colors cursor-pointer min-h-[48px]"
+            >
+              <Plus size={16} />
+              Add Participant
+            </button>
+          </div>
         </div>
 
         {/* Live attendance counter */}
@@ -321,7 +367,18 @@ export default function Dashboard() {
           <table className="w-full text-sm table-fixed">
             <thead>
               <tr className="border-b bg-gray-50 text-left">
-                <th className="px-4 py-3 font-medium text-gray-600 w-[40%]">
+                <th className="px-3 py-3 w-[4%]">
+                  <input
+                    type="checkbox"
+                    checked={
+                      participants.length > 0 &&
+                      selectedIds.size === participants.length
+                    }
+                    onChange={toggleSelectAll}
+                    className="cursor-pointer"
+                  />
+                </th>
+                <th className="px-4 py-3 font-medium text-gray-600 w-[36%]">
                   Name
                 </th>
                 <th className="px-4 py-3 font-medium text-gray-600 w-[20%]">
@@ -351,6 +408,14 @@ export default function Dashboard() {
                     key={p._id}
                     className={`border-b last:border-0 hover:bg-gray-50 ${flashedId === p._id ? "animate-flash-green" : ""}`}
                   >
+                    <td className="px-3 py-3">
+                      <input
+                        type="checkbox"
+                        checked={selectedIds.has(p._id)}
+                        onChange={() => toggleSelect(p._id)}
+                        className="cursor-pointer"
+                      />
+                    </td>
                     <td className="px-4 py-3">
                       <div className="font-medium text-gray-800">{p.name}</div>
                       <div className="text-xs text-gray-400">{p.email}</div>
@@ -440,9 +505,17 @@ export default function Dashboard() {
                 key={p._id}
                 className={`bg-white rounded-xl shadow-sm border p-4 space-y-3 ${flashedId === p._id ? "animate-flash-green" : ""}`}
               >
-                <div>
-                  <div className="font-medium text-gray-800">{p.name}</div>
-                  <div className="text-xs text-gray-400">{p.email}</div>
+                <div className="flex items-start justify-between">
+                  <div className="flex-1 min-w-0">
+                    <div className="font-medium text-gray-800">{p.name}</div>
+                    <div className="text-xs text-gray-400">{p.email}</div>
+                  </div>
+                  <input
+                    type="checkbox"
+                    checked={selectedIds.has(p._id)}
+                    onChange={() => toggleSelect(p._id)}
+                    className="cursor-pointer ml-3 mt-1 shrink-0"
+                  />
                 </div>
                 <div className="flex items-center gap-2">
                   <span
@@ -542,6 +615,14 @@ export default function Dashboard() {
         message={`Are you sure you want to delete "${deleting?.name}"? This cannot be undone.`}
         onConfirm={handleDelete}
         onCancel={() => setDeleting(null)}
+      />
+
+      <ConfirmDialog
+        open={bulkDeleting}
+        title="Delete Participants"
+        message={`Are you sure you want to delete ${selectedIds.size} participant${selectedIds.size === 1 ? "" : "s"}? This cannot be undone.`}
+        onConfirm={handleBulkDelete}
+        onCancel={() => setBulkDeleting(false)}
       />
     </div>
   );

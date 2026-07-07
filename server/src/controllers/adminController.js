@@ -88,6 +88,26 @@ async function addByAdmin(req, res, next) {
   }
 }
 
+async function bulkRemove(req, res, next) {
+  try {
+    const { ids } = req.body;
+
+    if (!Array.isArray(ids) || ids.length === 0) {
+      return res.status(400).json({ message: 'ids must be a non-empty array' });
+    }
+
+    const result = await Participant.deleteMany({ _id: { $in: ids } });
+
+    if (result.deletedCount === 0) {
+      return res.status(404).json({ message: 'No participants found to delete' });
+    }
+
+    res.json({ message: `Deleted ${result.deletedCount} participant${result.deletedCount === 1 ? '' : 's'}` });
+  } catch (err) {
+    next(err);
+  }
+}
+
 async function remove(req, res, next) {
   try {
     const participant = await Participant.findByIdAndDelete(req.params.id);
@@ -140,4 +160,4 @@ async function setAttendance(req, res, next) {
   }
 }
 
-module.exports = { list, update, addByAdmin, remove, setAttendance };
+module.exports = { list, update, addByAdmin, remove, bulkRemove, setAttendance };

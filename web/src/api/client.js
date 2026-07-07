@@ -53,6 +53,11 @@ export async function deleteParticipant(id) {
   return data
 }
 
+export async function deleteParticipants(ids) {
+  const { data } = await client.delete('/admin/participants/bulk', { data: { ids } })
+  return data
+}
+
 export async function setAttendance(id, attendanceStatus) {
   const { data } = await client.patch(`/admin/participants/${id}/attendance`, {
     attendanceStatus,

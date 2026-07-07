@@ -5,6 +5,7 @@ const {
   update,
   addByAdmin,
   remove,
+  bulkRemove,
   setAttendance,
 } = require('../controllers/adminController');
 const { auth, requireAdmin } = require('../middleware/auth');
@@ -40,6 +41,7 @@ router.use(auth, requireAdmin);
 router.get('/participants', list);
 router.post('/participants', upload.single('paymentScreenshot'), validate(participantSchema), addByAdmin);
 router.put('/participants/:id', upload.single('paymentScreenshot'), validate(updateSchema), update);
+router.delete('/participants/bulk', bulkRemove);
 router.delete('/participants/:id', remove);
 router.patch('/participants/:id/attendance', validate(attendanceSchema), setAttendance);
 
