@@ -1,0 +1,96 @@
+plugins {
+    alias(libs.plugins.android.application)
+    alias(libs.plugins.compose)
+}
+
+android {
+    namespace = "com.example.qrs"
+    compileSdk {
+        version = release(36) {
+            minorApiLevel = 1
+        }
+    }
+
+    defaultConfig {
+        applicationId = "com.example.qrs"
+        minSdk = 31
+        targetSdk = 36
+        versionCode = 1
+        versionName = "1.0"
+
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        buildConfigField("String", "SERVER_BASE_URL", "\"http://10.0.2.2:5000\"")
+    }
+
+    buildTypes {
+        release {
+            optimization {
+                enable = false
+            }
+            buildConfigField("String", "SERVER_BASE_URL", "\"http://10.0.2.2:5000\"")
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
+    }
+
+    buildFeatures {
+        compose = true
+        buildConfig = true
+    }
+}
+
+dependencies {
+    // Compose
+    implementation(platform(libs.compose.bom))
+    implementation(libs.compose.ui)
+    implementation(libs.compose.ui.graphics)
+    implementation(libs.compose.ui.tooling.preview)
+    implementation(libs.compose.material3)
+    implementation(libs.androidx.activity.compose)
+    debugImplementation(libs.compose.ui.tooling)
+
+    // Lifecycle
+    implementation(libs.lifecycle.viewmodel.compose)
+    implementation(libs.lifecycle.runtime.compose)
+
+    // Navigation
+    implementation(libs.navigation.compose)
+
+    // Networking
+    implementation(libs.retrofit.core)
+    implementation(libs.retrofit.converter.gson)
+    implementation(libs.okhttp.core)
+    implementation(libs.okhttp.logging)
+
+    // CameraX
+    implementation(libs.camerax.core)
+    implementation(libs.camerax.camera2)
+    implementation(libs.camerax.lifecycle)
+    implementation(libs.camerax.view)
+
+    // ML Kit
+    implementation(libs.mlkit.barcode)
+
+    // DataStore
+    implementation(libs.datastore.preferences)
+
+    // Security
+    implementation(libs.security.crypto)
+
+    // Coroutines
+    implementation(libs.coroutines.android)
+
+    // AndroidX
+    implementation(libs.androidx.core.ktx)
+    implementation(libs.androidx.appcompat)
+    implementation(libs.material)
+
+    // Test
+    testImplementation(libs.junit)
+    androidTestImplementation(libs.androidx.espresso.core)
+    androidTestImplementation(libs.androidx.junit)
+}
