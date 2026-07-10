@@ -311,7 +311,7 @@ export default function Dashboard() {
             <select
               value={paymentFilter}
               onChange={(e) => setPaymentFilter(e.target.value)}
-              className={`${filterClass} flex-1 sm:flex-none`}
+              className={`${filterClass} w-full sm:flex-none sm:w-auto`}
             >
               <option value="">All Payments</option>
               <option value="yes">Paid</option>
@@ -320,7 +320,7 @@ export default function Dashboard() {
             <select
               value={attendanceFilter}
               onChange={(e) => setAttendanceFilter(e.target.value)}
-              className={`${filterClass} flex-1 sm:flex-none`}
+              className={`${filterClass} w-full sm:flex-none sm:w-auto`}
             >
               <option value="">All Attendance</option>
               <option value="Present">Present</option>
@@ -331,14 +331,14 @@ export default function Dashboard() {
             {selectedIds.size > 0 && (
               <button
                 onClick={() => setBulkDeleting(true)}
-                className="flex items-center justify-center gap-1.5 bg-red-600 hover:bg-red-700 text-white text-sm font-semibold px-4 py-3 rounded-lg transition-colors cursor-pointer min-h-[48px]"
+                className="flex items-center justify-center gap-1.5 bg-red-600 hover:bg-red-700 text-white text-sm font-semibold px-4 py-3 rounded-lg transition-colors cursor-pointer min-h-[48px] w-full sm:w-auto"
               >
                 Delete ({selectedIds.size})
               </button>
             )}
             <button
               onClick={() => setModalOpen(true)}
-              className="flex items-center justify-center gap-1.5 bg-green-700 hover:bg-green-800 text-white text-sm font-semibold px-5 py-3 rounded-lg transition-colors cursor-pointer min-h-[48px]"
+              className="flex items-center justify-center gap-1.5 bg-green-700 hover:bg-green-800 text-white text-sm font-semibold px-5 py-3 rounded-lg transition-colors cursor-pointer min-h-[48px] w-full sm:w-auto"
             >
               <Plus size={16} />
               Add Participant
