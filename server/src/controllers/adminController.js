@@ -58,7 +58,7 @@ async function update(req, res, next) {
     const updates = { ...req.body };
 
     if (req.file && updates.paymentStatus === 'yes') {
-      updates.paymentScreenshotUrl = `/api/uploads/${req.file.filename}`;
+      updates.paymentScreenshotUrl = `/uploads/${req.file.filename}`;
     }
 
     const participant = await Participant.findByIdAndUpdate(id, updates, {
@@ -78,7 +78,7 @@ async function addByAdmin(req, res, next) {
   try {
     const body = { ...req.body };
     if (body.paymentStatus === 'yes' && req.file) {
-      body.paymentScreenshotUrl = `/api/uploads/${req.file.filename}`;
+      body.paymentScreenshotUrl = `/uploads/${req.file.filename}`;
     } else {
       body.paymentScreenshotUrl = '';
     }

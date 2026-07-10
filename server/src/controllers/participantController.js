@@ -8,7 +8,7 @@ async function register(req, res, next) {
       if (!req.file) {
         return res.status(400).json({ message: 'Payment screenshot required when payment status is Yes' });
       }
-      body.paymentScreenshotUrl = `/api/uploads/${req.file.filename}`;
+      body.paymentScreenshotUrl = `/uploads/${req.file.filename}`;
     } else {
       body.paymentScreenshotUrl = '';
     }

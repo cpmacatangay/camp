@@ -85,7 +85,7 @@ export default function Dashboard() {
 
   useEffect(() => {
     if (!user?.token) return;
-    const socket = io("/", {
+    const socket = io(import.meta.env.VITE_API_URL || "/", {
       auth: { token: user.token },
     });
     socketRef.current = socket;
