@@ -1,3 +1,8 @@
+const WEAK_JWT_SECRETS = [
+  'dev-jwt-secret-change-in-production',
+  'change-this-to-a-long-random-string',
+];
+
 const REQUIRED_ENV = ['MONGO_URI', 'JWT_SECRET'];
 const OPTIONAL_ENV = {
   PORT: 5000,
@@ -17,6 +22,17 @@ function validateEnv() {
     if (!process.env[key]) {
       process.env[key] = String(defaultValue);
     }
+  }
+
+  if (process.env.JWT_SECRET.length < 32) {
+    throw new Error(
+      'JWT_SECRET must be at least 32 characters long for security'
+    );
+  }
+  if (WEAK_JWT_SECRETS.includes(process.env.JWT_SECRET)) {
+    throw new Error(
+      'JWT_SECRET is set to a known weak/default value. Generate a strong random secret.'
+    );
   }
 }
 

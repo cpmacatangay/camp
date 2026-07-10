@@ -3,6 +3,9 @@ const Participant = require('../models/Participant');
 async function scan(req, res, next) {
   try {
     const { qrToken } = req.params;
+    if (!/^[0-9a-f]{32}$/.test(qrToken)) {
+      return res.status(400).json({ message: 'Invalid QR code format' });
+    }
     const participant = await Participant.findOne({ qrToken });
 
     if (!participant) {

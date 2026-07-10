@@ -7,19 +7,22 @@ function errorHandler(err, req, res, _next) {
   }
 
   if (err.code === 11000) {
-    const field = Object.keys(err.keyValue)[0];
-    return res.status(409).json({ message: `Duplicate value for ${field}` });
+    return res.status(409).json({ message: 'Duplicate value. This record already exists.' });
   }
 
-  if (err.name === 'MulterError' || err.message?.includes('Only JPEG')) {
+  if (err.name === 'MulterError' || (err.message && err.message.includes('Only JPEG'))) {
     if (err.code === 'LIMIT_FILE_SIZE') {
       return res.status(400).json({ message: 'File too large (max 5MB)' });
     }
     return res.status(400).json({ message: err.message });
   }
 
+  if (err.message && err.message.includes('Invalid image')) {
+    return res.status(400).json({ message: err.message });
+  }
+
   res.status(err.status || 500).json({
-    message: err.message || 'Internal server error',
+    message: 'Internal server error',
   });
 }
 

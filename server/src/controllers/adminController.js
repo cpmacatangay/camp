@@ -1,29 +1,41 @@
 const Participant = require('../models/Participant');
 
+function escapeRegExp(s) {
+  return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
 async function list(req, res, next) {
   try {
     const { search, paymentStatus, attendanceStatus, page = 1, limit = 10 } = req.query;
     const filter = {};
 
-    if (search) {
+    if (search && typeof search === 'string') {
+      const sanitized = escapeRegExp(search).slice(0, 100);
       filter.$or = [
-        { name: { $regex: search, $options: 'i' } },
-        { email: { $regex: search, $options: 'i' } },
-        { contactNumber: { $regex: search, $options: 'i' } },
+        { name: { $regex: sanitized, $options: 'i' } },
+        { email: { $regex: sanitized, $options: 'i' } },
+        { contactNumber: { $regex: sanitized, $options: 'i' } },
       ];
     }
-    if (paymentStatus) filter.paymentStatus = paymentStatus;
-    if (attendanceStatus) filter.attendanceStatus = attendanceStatus;
+    const validPaymentStatuses = ['yes', 'no'];
+    if (paymentStatus && typeof paymentStatus === 'string' && validPaymentStatuses.includes(paymentStatus)) {
+      filter.paymentStatus = paymentStatus;
+    }
+    const validAttendanceStatuses = ['Absent', 'Present'];
+    if (attendanceStatus && typeof attendanceStatus === 'string' && validAttendanceStatuses.includes(attendanceStatus)) {
+      filter.attendanceStatus = attendanceStatus;
+    }
 
     const pageNum = Math.max(1, parseInt(page, 10) || 1);
     const limitNum = Math.max(1, Math.min(100, parseInt(limit, 10) || 10));
     const skip = (pageNum - 1) * limitNum;
 
-    const [participants, total, presentCount, absentCount] = await Promise.all([
+    const [participants, total, presentCount, absentCount, totalParticipants] = await Promise.all([
       Participant.find(filter).sort({ createdAt: -1 }).skip(skip).limit(limitNum),
       Participant.countDocuments(filter),
       Participant.countDocuments({ attendanceStatus: 'Present' }),
       Participant.countDocuments({ attendanceStatus: 'Absent' }),
+      Participant.countDocuments(),
     ]);
 
     res.json({
@@ -33,6 +45,7 @@ async function list(req, res, next) {
       totalPages: Math.ceil(total / limitNum),
       presentCount,
       absentCount,
+      totalParticipants,
     });
   } catch (err) {
     next(err);
@@ -45,7 +58,7 @@ async function update(req, res, next) {
     const updates = { ...req.body };
 
     if (req.file && updates.paymentStatus === 'yes') {
-      updates.paymentScreenshotUrl = `/uploads/${req.file.filename}`;
+      updates.paymentScreenshotUrl = `/api/uploads/${req.file.filename}`;
     }
 
     const participant = await Participant.findByIdAndUpdate(id, updates, {
@@ -65,7 +78,7 @@ async function addByAdmin(req, res, next) {
   try {
     const body = { ...req.body };
     if (body.paymentStatus === 'yes' && req.file) {
-      body.paymentScreenshotUrl = `/uploads/${req.file.filename}`;
+      body.paymentScreenshotUrl = `/api/uploads/${req.file.filename}`;
     } else {
       body.paymentScreenshotUrl = '';
     }
@@ -86,7 +99,15 @@ async function bulkRemove(req, res, next) {
       return res.status(400).json({ message: 'ids must be a non-empty array' });
     }
 
-    const result = await Participant.deleteMany({ _id: { $in: ids } });
+    const validIds = ids.filter((id) => typeof id === 'string' && /^[0-9a-fA-F]{24}$/.test(id));
+    if (validIds.length === 0) {
+      return res.status(400).json({ message: 'No valid participant IDs provided' });
+    }
+    if (validIds.length > 500) {
+      return res.status(400).json({ message: 'Too many participants to delete at once (max 500)' });
+    }
+
+    const result = await Participant.deleteMany({ _id: { $in: validIds } });
 
     if (result.deletedCount === 0) {
       return res.status(404).json({ message: 'No participants found to delete' });

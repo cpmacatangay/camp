@@ -1,5 +1,6 @@
 require('dotenv').config({ path: require('path').resolve(__dirname, '../../.env') });
 
+const crypto = require('crypto');
 const mongoose = require('mongoose');
 const Admin = require('../models/Admin');
 const { validateEnv } = require('../config/env');
@@ -11,10 +12,10 @@ async function seed() {
     console.log('Connected to MongoDB');
 
     const email = process.env.SEED_ADMIN_EMAIL;
-    const password = process.env.SEED_ADMIN_PASSWORD;
+    let password = process.env.SEED_ADMIN_PASSWORD;
 
-    if (!email || !password) {
-      console.error('SEED_ADMIN_EMAIL and SEED_ADMIN_PASSWORD must be set');
+    if (!email) {
+      console.error('SEED_ADMIN_EMAIL must be set');
       process.exit(1);
     }
 
@@ -25,15 +26,24 @@ async function seed() {
       return;
     }
 
+    const shouldAutoGenerate = !password || password === 'admin123';
+    if (shouldAutoGenerate) {
+      password = crypto.randomBytes(16).toString('hex');
+      console.log(`No strong password provided. Auto-generated: ${password}`);
+    }
+
     const admin = new Admin({
       email,
       passwordHash: password,
       role: 'admin',
+      mustChangePassword: shouldAutoGenerate,
     });
     await admin.save();
 
     console.log(`Admin "${email}" created successfully`);
-    console.log('IMPORTANT: Change the password after first login');
+    if (shouldAutoGenerate) {
+      console.log('⚠️  Admin must change password on first login');
+    }
 
     await mongoose.disconnect();
   } catch (err) {
