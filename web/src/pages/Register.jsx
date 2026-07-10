@@ -36,9 +36,14 @@ export default function Register() {
   const toast = useToast();
   const navigate = useNavigate();
 
+  const phoneFields = ['contactNumber', 'fatherContact', 'motherContact'];
+
   function set(field) {
     return (e) => {
-      const newVal = e.target.value;
+      let newVal = e.target.value;
+      if (phoneFields.includes(field)) {
+        newVal = newVal.replace(/[^\d+]/g, '');
+      }
       setForm((prev) => {
         const next = { ...prev, [field]: newVal };
         const fieldErr = validateField(field, next)[field];
@@ -99,7 +104,7 @@ export default function Register() {
       formValues[field] &&
       !PH_MOBILE.test(cleanPhone(formValues[field]))
     ) {
-      errs[field] = "Enter a valid PH mobile number (e.g., 09171234567)";
+      errs[field] = "Enter a valid contact number (e.g., 09171234567)";
     }
     if (field === "birthDate" && formValues.birthDate) {
       const parts = formValues.birthDate.split("-");
@@ -152,7 +157,16 @@ export default function Register() {
     return errs;
   }
 
+  const sentenceCaseFields = ['name', 'homeAddress', 'facebookName', 'fatherName', 'motherName'];
+
+  function toSentenceCase(s) {
+    return s.replace(/\w\S*/g, (w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase());
+  }
+
   function handleBlur(field) {
+    if (sentenceCaseFields.includes(field) && form[field]) {
+      setForm((prev) => ({ ...prev, [field]: toSentenceCase(prev[field]) }));
+    }
     const fieldErr = validateField(field, form)[field];
     setErrors((prev) => {
       if (fieldErr) return { ...prev, [field]: fieldErr };
@@ -283,9 +297,7 @@ export default function Register() {
       });
     } catch (err) {
       const msg =
-        err.response?.data?.message ||
-        err.response?.data?.errors?.[0] ||
-        "Registration failed. Please try again.";
+        err.response?.data?.message || "Registration failed. Please try again.";
       setErrors({ _form: msg });
       toast.error(msg);
     } finally {

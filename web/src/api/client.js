@@ -17,8 +17,9 @@ export async function registerParticipant(formData) {
   return data
 }
 
-export async function getParticipantQR(id) {
-  const { data } = await client.get(`/participants/${id}/qr`, {
+export async function getParticipantQR(id, email) {
+  const { data } = await client.get(`/participants/${encodeURIComponent(id)}/qr`, {
+    params: { email },
     responseType: 'blob',
   })
   return data
@@ -42,14 +43,14 @@ export async function addParticipant(formData) {
 }
 
 export async function updateParticipant(id, formData) {
-  const { data } = await client.put(`/admin/participants/${id}`, formData, {
+  const { data } = await client.put(`/admin/participants/${encodeURIComponent(id)}`, formData, {
     headers: { 'Content-Type': 'multipart/form-data' },
   })
   return data
 }
 
 export async function deleteParticipant(id) {
-  const { data } = await client.delete(`/admin/participants/${id}`)
+  const { data } = await client.delete(`/admin/participants/${encodeURIComponent(id)}`)
   return data
 }
 
@@ -59,7 +60,7 @@ export async function deleteParticipants(ids) {
 }
 
 export async function setAttendance(id, attendanceStatus) {
-  const { data } = await client.patch(`/admin/participants/${id}/attendance`, {
+  const { data } = await client.patch(`/admin/participants/${encodeURIComponent(id)}/attendance`, {
     attendanceStatus,
   })
   return data
@@ -70,6 +71,13 @@ export async function exportExcel() {
     responseType: 'blob',
   })
   return data
+}
+
+export async function getUploadUrl(filename) {
+  const { data } = await client.get(`/uploads/${encodeURIComponent(filename)}`, {
+    responseType: 'blob',
+  })
+  return URL.createObjectURL(data)
 }
 
 export default client

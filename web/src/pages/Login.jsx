@@ -19,8 +19,12 @@ export default function Login() {
     setError("");
     setLoading(true);
     try {
-      await login(email, password);
-      navigate("/dashboard");
+      const result = await login(email, password);
+      if (result.mustChangePassword) {
+        navigate("/change-password");
+      } else {
+        navigate("/dashboard");
+      }
     } catch (err) {
       const msg = err.response?.data?.message || "Login failed";
       setError(msg);

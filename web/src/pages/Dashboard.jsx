@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import { io } from "socket.io-client";
-import { Search, Download, Plus, LogOut } from "lucide-react";
+import { Search, Download, Plus, LogOut, KeyRound } from "lucide-react";
 import {
   getParticipants,
   addParticipant,
@@ -35,11 +36,13 @@ export default function Dashboard() {
   const [bulkDeleting, setBulkDeleting] = useState(false);
   const { user, logout } = useAuth();
   const toast = useToast();
+  const navigate = useNavigate();
   const socketRef = useRef(null);
   const [socketStatus, setSocketStatus] = useState("connecting");
   const [flashedId, setFlashedId] = useState(null);
   const [presentCount, setPresentCount] = useState(0);
-  const [absentCount, setAbsentCount] = useState(0);
+  const [_absentCount, setAbsentCount] = useState(0);
+  const [totalParticipants, setTotalParticipants] = useState(0);
   const hasConnectedBefore = useRef(false);
 
   useEffect(() => { document.title = "TRAILBLAZE - Admin"; }, []);
@@ -63,6 +66,7 @@ export default function Dashboard() {
       if (data.presentCount !== undefined) {
         setPresentCount(data.presentCount);
         setAbsentCount(data.absentCount);
+        setTotalParticipants(data.totalParticipants);
       }
     } catch {
       toast.error("Failed to load participants");
@@ -140,6 +144,10 @@ export default function Dashboard() {
 
     return () => socket.close();
   }, [user.token, fetchParticipants, toast]);
+
+  function handleChangePassword() {
+    navigate('/change-password');
+  }
 
   function handleLogout() {
     logout();
@@ -260,6 +268,13 @@ export default function Dashboard() {
               {user.email}
             </span>
             <button
+              onClick={handleChangePassword}
+              className="hidden sm:inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-green-700 cursor-pointer px-2 py-2.5 sm:py-2 min-h-[44px] sm:min-h-0"
+              title="Change password"
+            >
+              <KeyRound size={16} />
+            </button>
+            <button
               onClick={handleExport}
               className="flex items-center gap-1.5 text-sm bg-green-50 text-green-700 border border-green-200 px-4 py-2.5 sm:py-2 rounded-lg hover:bg-green-100 cursor-pointer min-h-[44px] sm:min-h-0"
             >
@@ -339,7 +354,7 @@ export default function Dashboard() {
                 {presentCount}
               </span>
               <span className="text-sm text-gray-500">
-                / {presentCount + absentCount} Present
+                / {totalParticipants} Present
               </span>
             </div>
             <div className="flex-1 h-2.5 bg-gray-100 rounded-full overflow-hidden">
@@ -347,8 +362,8 @@ export default function Dashboard() {
                 className="h-full bg-green-500 rounded-full transition-all duration-500"
                 style={{
                   width:
-                    presentCount + absentCount > 0
-                      ? `${(presentCount / (presentCount + absentCount)) * 100}%`
+                    totalParticipants > 0
+                      ? `${(presentCount / totalParticipants) * 100}%`
                       : "0%",
                 }}
               />

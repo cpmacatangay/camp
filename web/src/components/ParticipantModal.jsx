@@ -6,6 +6,7 @@ import TextAreaField from './form/TextAreaField'
 import DateField from './form/DateField'
 import ParentsFieldset from './form/ParentsFieldset'
 import PaymentSection from './form/PaymentSection'
+import { useToast } from './Toast'
 
 const INITIAL = {
   name: '', homeAddress: '', birthDate: '', contactNumber: '', email: '',
@@ -14,12 +15,26 @@ const INITIAL = {
   paymentStatus: 'no',
 }
 
+function cleanPhone(v) {
+  return v.replace(/[\s\-()]/g, '')
+}
+
+function toSentenceCase(s) {
+  return s.replace(/\w\S*/g, (w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
+}
+
+const PH_MOBILE = /^(?:\+63|0)9\d{9}$/
+
+const phoneFields = ['contactNumber', 'fatherContact', 'motherContact']
+const sentenceCaseFields = ['name', 'homeAddress', 'facebookName', 'fatherName', 'motherName']
+
 export default function ParticipantModal({ open, participant, onSave, onClose }) {
   const [form, setForm] = useState(INITIAL)
   const [file, setFile] = useState(null)
   const [saving, setSaving] = useState(false)
   const [errors, setErrors] = useState({})
   const { modalRef, titleId } = useModalA11y(open, onClose)
+  const toast = useToast()
 
   useEffect(() => {
     if (participant) {
@@ -46,7 +61,19 @@ export default function ParticipantModal({ open, participant, onSave, onClose })
   }, [participant, open])
 
   function set(field) {
-    return (e) => setForm((prev) => ({ ...prev, [field]: e.target.value }))
+    return (e) => {
+      let newVal = e.target.value
+      if (phoneFields.includes(field)) {
+        newVal = newVal.replace(/[^\d+]/g, '')
+      }
+      setForm((prev) => ({ ...prev, [field]: newVal }))
+    }
+  }
+
+  function handleBlur(field) {
+    if (sentenceCaseFields.includes(field) && form[field]) {
+      setForm((prev) => ({ ...prev, [field]: toSentenceCase(prev[field]) }))
+    }
   }
 
   function validate() {
@@ -63,6 +90,29 @@ export default function ParticipantModal({ open, participant, onSave, onClose })
     }
     if (form.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) {
       errs.email = 'Invalid email address'
+    }
+    if (form.contactNumber && !PH_MOBILE.test(cleanPhone(form.contactNumber))) {
+      errs.contactNumber = 'Enter a valid PH mobile number (e.g., 09171234567)'
+    }
+    if (form.fatherContact && !PH_MOBILE.test(cleanPhone(form.fatherContact))) {
+      errs.fatherContact = 'Enter a valid PH mobile number (e.g., 09171234567)'
+    }
+    if (form.motherContact && !PH_MOBILE.test(cleanPhone(form.motherContact))) {
+      errs.motherContact = 'Enter a valid PH mobile number (e.g., 09171234567)'
+    }
+    const nameFields = ['name', 'nickname', 'fatherName', 'motherName']
+    for (const field of nameFields) {
+      if (form[field] && /\d/.test(form[field])) {
+        errs[field] = 'Should not contain numbers'
+      } else if (form[field] && form[field].trim().length < 2) {
+        errs[field] = 'Must be at least 2 characters'
+      }
+    }
+    if (form.facebookName && /\d/.test(form.facebookName)) {
+      errs.facebookName = 'Should not contain numbers'
+    }
+    if (form.homeAddress && form.homeAddress.trim().length < 5) {
+      errs.homeAddress = 'Enter a full address (at least 5 characters)'
     }
     if (file && file.size > 5 * 1024 * 1024) {
       errs.paymentScreenshot = 'File must be under 5MB'
@@ -87,6 +137,7 @@ export default function ParticipantModal({ open, participant, onSave, onClose })
       await onSave(fd, participant?._id)
       onClose()
     } catch {
+      toast.error('Failed to save participant')
     } finally {
       setSaving(false)
     }
@@ -116,19 +167,19 @@ export default function ParticipantModal({ open, participant, onSave, onClose })
 
         <form onSubmit={handleSubmit} className="p-4 sm:p-6 space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <TextField label="Name" value={form.name} onChange={set('name')} error={errors.name} required />
+            <TextField label="Name" value={form.name} onChange={set('name')} onBlur={() => handleBlur('name')} error={errors.name} required />
             <TextField label="Nickname" value={form.nickname} onChange={set('nickname')} error={errors.nickname} required />
             <DateField label="Birth Date" value={form.birthDate} onChange={set('birthDate')} error={errors.birthDate} required />
             <TextField label="Email" type="email" value={form.email} onChange={set('email')} error={errors.email} required />
             <TextField label="Contact Number" value={form.contactNumber} onChange={set('contactNumber')} error={errors.contactNumber} required />
-            <TextField label="Facebook Name" value={form.facebookName} onChange={set('facebookName')} error={errors.facebookName} required />
+            <TextField label="Facebook Name" value={form.facebookName} onChange={set('facebookName')} onBlur={() => handleBlur('facebookName')} error={errors.facebookName} required />
           </div>
 
-          <TextAreaField label="Home Address" value={form.homeAddress} onChange={set('homeAddress')} error={errors.homeAddress} required />
+          <TextAreaField label="Home Address" value={form.homeAddress} onChange={set('homeAddress')} onBlur={() => handleBlur('homeAddress')} error={errors.homeAddress} required />
 
           <TextAreaField label="Existing Sickness / Illness" value={form.existingSickness} onChange={set('existingSickness')} />
 
-          <ParentsFieldset values={form} onChange={set} errors={errors} />
+          <ParentsFieldset values={form} onChange={set} onBlur={handleBlur} errors={errors} />
 
           <PaymentSection
             paymentStatus={form.paymentStatus}
