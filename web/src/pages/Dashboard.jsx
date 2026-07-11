@@ -17,6 +17,7 @@ import useDebouncedValue from "../hooks/useDebouncedValue";
 import SkeletonRow from "../components/SkeletonRow";
 import EmptyState from "../components/EmptyState";
 import ParticipantModal from "../components/ParticipantModal";
+import ViewParticipantModal from "../components/ViewParticipantModal";
 import ConfirmDialog from "../components/ConfirmDialog";
 
 export default function Dashboard() {
@@ -31,6 +32,7 @@ export default function Dashboard() {
   const [total, setTotal] = useState(0);
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState(null);
+  const [viewing, setViewing] = useState(null);
   const [deleting, setDeleting] = useState(null);
   const [selectedIds, setSelectedIds] = useState(new Set());
   const [bulkDeleting, setBulkDeleting] = useState(false);
@@ -476,6 +478,12 @@ export default function Dashboard() {
                     <td className="px-4 py-3">
                       <div className="flex items-center justify-start gap-2">
                         <button
+                          onClick={() => setViewing(p)}
+                          className="text-sm px-3 py-1.5 rounded-lg border border-gray-300 text-gray-600 hover:bg-gray-100 cursor-pointer"
+                        >
+                          View
+                        </button>
+                        <button
                           onClick={() => setEditing(p)}
                           className="text-sm px-3 py-1.5 rounded-lg border border-gray-300 text-gray-600 hover:bg-gray-100 cursor-pointer"
                         >
@@ -566,7 +574,13 @@ export default function Dashboard() {
                     {p.attendanceStatus === "Present" ? "Present" : "Absent"}
                   </button>
                 </div>
-                <div className="flex items-center justify-end gap-2 pt-1 border-t">
+                <div className="flex items-center justify-start gap-2 pt-1 border-t">
+                  <button
+                    onClick={() => setViewing(p)}
+                    className="text-sm px-3 py-1.5 rounded-lg border border-gray-300 text-gray-600 hover:bg-gray-100 cursor-pointer"
+                  >
+                    View
+                  </button>
                   <button
                     onClick={() => setEditing(p)}
                     className="text-sm px-3 py-1.5 rounded-lg border border-gray-300 text-gray-600 hover:bg-gray-100 cursor-pointer"
@@ -643,6 +657,12 @@ export default function Dashboard() {
         message={`Are you sure you want to delete "${deleting?.name}"? This cannot be undone.`}
         onConfirm={handleDelete}
         onCancel={() => setDeleting(null)}
+      />
+
+      <ViewParticipantModal
+        open={!!viewing}
+        participant={viewing}
+        onClose={() => setViewing(null)}
       />
 
       <ConfirmDialog
