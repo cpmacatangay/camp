@@ -1,8 +1,21 @@
+import { useState, useEffect } from 'react'
 import { X, CheckCircle2, Circle } from 'lucide-react'
 import useModalA11y from '../hooks/useModalA11y'
+import client from '../api/client'
 
 export default function ViewParticipantModal({ open, participant, onClose }) {
   const { modalRef, titleId } = useModalA11y(open, onClose)
+  const [screenshotSrc, setScreenshotSrc] = useState(null)
+
+  useEffect(() => {
+    setScreenshotSrc(null)
+    if (!participant?.paymentScreenshotUrl) return
+    let cancelled = false
+    client.get(participant.paymentScreenshotUrl, { responseType: 'blob' })
+      .then(({ data }) => { if (!cancelled) setScreenshotSrc(URL.createObjectURL(data)) })
+      .catch(() => { if (!cancelled) setScreenshotSrc('error') })
+    return () => { cancelled = true }
+  }, [participant])
 
   if (!open || !participant) return null
 
@@ -113,11 +126,17 @@ export default function ViewParticipantModal({ open, participant, onClose }) {
               <div className="mt-4">
                 {label('Payment Screenshot')}
                 <div className="mt-1">
-                  <img
-                    src={p.paymentScreenshotUrl}
-                    alt="Payment screenshot"
-                    className="h-32 w-auto rounded-lg border object-cover"
-                  />
+                  {screenshotSrc === 'error' ? (
+                    <p className="text-sm text-red-500">Failed to load screenshot</p>
+                  ) : screenshotSrc ? (
+                    <img
+                      src={screenshotSrc}
+                      alt="Payment screenshot"
+                      className="h-32 w-auto rounded-lg border object-cover"
+                    />
+                  ) : (
+                    <p className="text-sm text-gray-400">Loading...</p>
+                  )}
                 </div>
               </div>
             )}
