@@ -574,7 +574,7 @@ export default function Dashboard() {
                     {p.attendanceStatus === "Present" ? "Present" : "Absent"}
                   </button>
                 </div>
-                <div className="flex items-center justify-start gap-2 pt-1 border-t">
+                <div className="flex items-center justify-end gap-2">
                   <button
                     onClick={() => setViewing(p)}
                     className="text-sm px-3 py-1.5 rounded-lg border border-gray-300 text-gray-600 hover:bg-gray-100 cursor-pointer"
