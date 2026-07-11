@@ -66,13 +66,10 @@ export default function ParticipantModal({ open, participant, onSave, onClose })
       if (phoneFields.includes(field)) {
         newVal = newVal.replace(/[^\d+]/g, '')
       }
+      if (sentenceCaseFields.includes(field)) {
+        newVal = toSentenceCase(newVal)
+      }
       setForm((prev) => ({ ...prev, [field]: newVal }))
-    }
-  }
-
-  function handleBlur(field) {
-    if (sentenceCaseFields.includes(field) && form[field]) {
-      setForm((prev) => ({ ...prev, [field]: toSentenceCase(prev[field]) }))
     }
   }
 
@@ -167,19 +164,19 @@ export default function ParticipantModal({ open, participant, onSave, onClose })
 
         <form onSubmit={handleSubmit} className="p-4 sm:p-6 space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <TextField label="Name" value={form.name} onChange={set('name')} onBlur={() => handleBlur('name')} error={errors.name} required />
+            <TextField label="Name" value={form.name} onChange={set('name')} error={errors.name} required />
             <TextField label="Nickname" value={form.nickname} onChange={set('nickname')} error={errors.nickname} required />
             <DateField label="Birth Date" value={form.birthDate} onChange={set('birthDate')} error={errors.birthDate} required />
             <TextField label="Email" type="email" value={form.email} onChange={set('email')} error={errors.email} required />
             <TextField label="Contact Number" value={form.contactNumber} onChange={set('contactNumber')} error={errors.contactNumber} required />
-            <TextField label="Facebook Name" value={form.facebookName} onChange={set('facebookName')} onBlur={() => handleBlur('facebookName')} error={errors.facebookName} required />
+            <TextField label="Facebook Name" value={form.facebookName} onChange={set('facebookName')} error={errors.facebookName} required />
           </div>
 
-          <TextAreaField label="Home Address" value={form.homeAddress} onChange={set('homeAddress')} onBlur={() => handleBlur('homeAddress')} error={errors.homeAddress} required />
+          <TextAreaField label="Home Address" value={form.homeAddress} onChange={set('homeAddress')} error={errors.homeAddress} required />
 
           <TextAreaField label="Existing Sickness / Illness" value={form.existingSickness} onChange={set('existingSickness')} />
 
-          <ParentsFieldset values={form} onChange={set} onBlur={handleBlur} errors={errors} />
+          <ParentsFieldset values={form} onChange={set} errors={errors} />
 
           <PaymentSection
             paymentStatus={form.paymentStatus}

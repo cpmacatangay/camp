@@ -45,13 +45,19 @@ export default function Dashboard() {
   const [totalParticipants, setTotalParticipants] = useState(0);
   const hasConnectedBefore = useRef(false);
 
-  useEffect(() => { document.title = "TRAILBLAZE - Admin"; }, []);
+  useEffect(() => {
+    document.title = "TRAILBLAZE - Admin";
+  }, []);
 
   // Refs for socket handler to read latest state without stale closures
   const attendanceFilterRef = useRef(attendanceFilter);
   const participantsRef = useRef(participants);
-  useEffect(() => { attendanceFilterRef.current = attendanceFilter; }, [attendanceFilter]);
-  useEffect(() => { participantsRef.current = participants; }, [participants]);
+  useEffect(() => {
+    attendanceFilterRef.current = attendanceFilter;
+  }, [attendanceFilter]);
+  useEffect(() => {
+    participantsRef.current = participants;
+  }, [participants]);
 
   const fetchParticipants = useCallback(async () => {
     try {
@@ -110,7 +116,10 @@ export default function Dashboard() {
         (p) => p._id === data.participantId,
       );
 
-      if (!exists && (!currentFilter || currentFilter === data.attendanceStatus)) {
+      if (
+        !exists &&
+        (!currentFilter || currentFilter === data.attendanceStatus)
+      ) {
         // Participant is not on the current page but should be visible — re-fetch
         fetchParticipants();
       } else if (exists) {
@@ -146,7 +155,7 @@ export default function Dashboard() {
   }, [user.token, fetchParticipants, toast]);
 
   function handleChangePassword() {
-    navigate('/change-password');
+    navigate("/change-password");
   }
 
   function handleLogout() {
@@ -242,7 +251,7 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <header className="bg-white border-b">
+      <header className="bg-white shadow-sm">
         <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
           <h1 className="text-xl font-bold text-green-800">TRAILBLAZE</h1>
           <div className="flex items-center gap-2 sm:gap-3">
@@ -276,7 +285,7 @@ export default function Dashboard() {
             </button>
             <button
               onClick={handleExport}
-              className="flex items-center gap-1.5 text-sm bg-green-50 text-green-700 border border-green-200 px-4 py-2.5 sm:py-2 rounded-lg hover:bg-green-100 cursor-pointer min-h-[44px] sm:min-h-0"
+              className="flex items-center gap-1.5 text-sm bg-green-50 text-green-700 border border-green-200 px-4 py-2.5 sm:py-2 rounded-xl hover:bg-green-100 cursor-pointer min-h-[44px] sm:min-h-0 shadow-sm hover:shadow-md transition-all"
             >
               <Download size={16} />
               Export
@@ -293,61 +302,63 @@ export default function Dashboard() {
       </header>
 
       <main className="max-w-6xl mx-auto px-4 py-6 space-y-4">
-        <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between">
-          <div className="flex flex-1 gap-3 flex-wrap">
-            <div className="relative w-full sm:flex-1 sm:min-w-[200px]">
-              <Search
-                size={16}
-                className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
-              />
-              <input
-                type="text"
-                placeholder="Search name, email, contact..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="w-full pl-9 pr-3 py-2.5 border border-gray-300 rounded-lg text-base focus:outline-none focus:ring-2 focus:ring-green-500"
-              />
-            </div>
-            <select
-              value={paymentFilter}
-              onChange={(e) => setPaymentFilter(e.target.value)}
-              className={`${filterClass} w-full sm:flex-none sm:w-auto`}
-            >
-              <option value="">All Payments</option>
-              <option value="yes">Paid</option>
-              <option value="no">Not Paid</option>
-            </select>
-            <select
-              value={attendanceFilter}
-              onChange={(e) => setAttendanceFilter(e.target.value)}
-              className={`${filterClass} w-full sm:flex-none sm:w-auto`}
-            >
-              <option value="">All Attendance</option>
-              <option value="Present">Present</option>
-              <option value="Absent">Absent</option>
-            </select>
-          </div>
-          <div className="flex items-center gap-2 w-full sm:w-auto">
-            {selectedIds.size > 0 && (
-              <button
-                onClick={() => setBulkDeleting(true)}
-                className="flex items-center justify-center gap-1.5 bg-red-600 hover:bg-red-700 text-white text-sm font-semibold px-4 py-3 rounded-lg transition-colors cursor-pointer min-h-[48px] w-full sm:w-auto"
+        <div className="bg-white rounded-xl shadow-sm p-4">
+          <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between">
+            <div className="flex flex-1 gap-3 flex-wrap">
+              <div className="relative w-full sm:flex-1 sm:min-w-[200px]">
+                <Search
+                  size={16}
+                  className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+                />
+                <input
+                  type="text"
+                  placeholder="Search name, email, contact..."
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  className="w-full pl-9 pr-3 py-2.5 border border-gray-300 rounded-lg text-base focus:outline-none focus:ring-2 focus:ring-green-500"
+                />
+              </div>
+              <select
+                value={paymentFilter}
+                onChange={(e) => setPaymentFilter(e.target.value)}
+                className={`${filterClass} w-full sm:flex-none sm:w-auto`}
               >
-                Delete ({selectedIds.size})
+                <option value="">All Payments</option>
+                <option value="yes">Paid</option>
+                <option value="no">Not Paid</option>
+              </select>
+              <select
+                value={attendanceFilter}
+                onChange={(e) => setAttendanceFilter(e.target.value)}
+                className={`${filterClass} w-full sm:flex-none sm:w-auto`}
+              >
+                <option value="">All Attendance</option>
+                <option value="Present">Present</option>
+                <option value="Absent">Absent</option>
+              </select>
+            </div>
+            <div className="flex items-center gap-2 w-full sm:w-auto">
+              {selectedIds.size > 0 && (
+                <button
+                  onClick={() => setBulkDeleting(true)}
+                  className="flex items-center justify-center gap-1.5 bg-red-600 hover:bg-red-700 active:bg-red-800 text-white text-sm font-semibold px-4 py-3 rounded-xl transition-all cursor-pointer min-h-[48px] w-full sm:w-auto shadow-sm hover:shadow-md"
+                >
+                  Delete ({selectedIds.size})
+                </button>
+              )}
+              <button
+                onClick={() => setModalOpen(true)}
+                className="flex items-center justify-center gap-1.5 bg-green-700 hover:bg-green-800 active:bg-green-900 text-white text-sm font-semibold px-5 py-3 rounded-xl transition-all cursor-pointer min-h-[48px] w-full sm:w-auto shadow-sm hover:shadow-md"
+              >
+                <Plus size={16} />
+                Add Participant
               </button>
-            )}
-            <button
-              onClick={() => setModalOpen(true)}
-              className="flex items-center justify-center gap-1.5 bg-green-700 hover:bg-green-800 text-white text-sm font-semibold px-5 py-3 rounded-lg transition-colors cursor-pointer min-h-[48px] w-full sm:w-auto"
-            >
-              <Plus size={16} />
-              Add Participant
-            </button>
+            </div>
           </div>
         </div>
 
         {/* Live attendance counter */}
-        <div className="bg-white rounded-xl shadow-sm border p-4">
+        <div className="bg-white rounded-xl shadow-sm p-4">
           <div className="flex items-center gap-4">
             <div className="flex items-baseline gap-1">
               <span className="text-2xl font-bold text-green-700">
@@ -380,11 +391,11 @@ export default function Dashboard() {
         </div>
 
         {/* Desktop table */}
-        <div className="hidden md:block bg-white rounded-xl shadow-sm border overflow-x-auto">
+        <div className="hidden md:block bg-white rounded-xl shadow-sm overflow-x-auto">
           <table className="w-full text-sm table-fixed">
             <thead>
-              <tr className="border-b bg-gray-50 text-left">
-                <th className="px-3 py-3 w-[4%]">
+              <tr className="bg-gray-50 text-left">
+                <th className="px-4 py-3 w-[4%]">
                   <input
                     type="checkbox"
                     checked={
@@ -404,7 +415,7 @@ export default function Dashboard() {
                 <th className="px-4 py-3 font-medium text-gray-600 w-[20%]">
                   Attendance
                 </th>
-                <th className="px-4 py-3 font-medium text-gray-600 w-[20%] text-right">
+                <th className="px-4 py-3 font-medium text-gray-600 w-[20%]">
                   Actions
                 </th>
               </tr>
@@ -423,9 +434,9 @@ export default function Dashboard() {
                 participants.map((p) => (
                   <tr
                     key={p._id}
-                    className={`border-b last:border-0 hover:bg-gray-50 ${flashedId === p._id ? "animate-flash-green" : ""}`}
+                    className={`hover:bg-gray-50 ${flashedId === p._id ? "animate-flash-green" : ""}`}
                   >
-                    <td className="px-3 py-3">
+                    <td className="px-4 py-3">
                       <input
                         type="checkbox"
                         checked={selectedIds.has(p._id)}
@@ -462,8 +473,8 @@ export default function Dashboard() {
                           : "Absent"}
                       </button>
                     </td>
-                    <td className="px-4 py-3 text-right">
-                      <div className="flex items-center justify-end gap-2">
+                    <td className="px-4 py-3">
+                      <div className="flex items-center justify-start gap-2">
                         <button
                           onClick={() => setEditing(p)}
                           className="text-sm px-3 py-1.5 rounded-lg border border-gray-300 text-gray-600 hover:bg-gray-100 cursor-pointer"
@@ -491,7 +502,7 @@ export default function Dashboard() {
             Array.from({ length: 4 }).map((_, i) => (
               <div
                 key={i}
-                className="bg-white rounded-xl shadow-sm border p-4 animate-pulse space-y-2"
+                className="bg-white rounded-xl shadow-sm p-4 animate-pulse space-y-2"
               >
                 <div className="h-4 bg-gray-200 rounded w-3/4" />
                 <div className="h-3 bg-gray-200 rounded w-1/2" />
@@ -502,7 +513,7 @@ export default function Dashboard() {
               </div>
             ))
           ) : participants.length === 0 ? (
-            <div className="bg-white rounded-xl shadow-sm border p-12 text-center">
+            <div className="bg-white rounded-xl shadow-sm p-12 text-center">
               <div className="flex flex-col items-center gap-3">
                 <div className="bg-gray-100 rounded-full p-3">
                   <Search size={28} className="text-gray-400" />
@@ -520,7 +531,7 @@ export default function Dashboard() {
             participants.map((p) => (
               <div
                 key={p._id}
-                className={`bg-white rounded-xl shadow-sm border p-4 space-y-3 ${flashedId === p._id ? "animate-flash-green" : ""}`}
+                className={`bg-white rounded-xl shadow-sm p-4 space-y-3 ${flashedId === p._id ? "animate-flash-green" : ""}`}
               >
                 <div className="flex items-start justify-between">
                   <div className="flex-1 min-w-0">
@@ -580,7 +591,7 @@ export default function Dashboard() {
             <button
               onClick={() => setPage((p) => Math.max(1, p - 1))}
               disabled={page <= 1}
-              className="px-3 py-2 text-sm rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-100 disabled:opacity-40 disabled:cursor-default cursor-pointer"
+              className="px-3 py-2 text-sm rounded-xl border border-gray-300 text-gray-700 hover:bg-gray-100 disabled:opacity-40 disabled:cursor-default cursor-pointer shadow-sm hover:shadow-md transition-all"
             >
               ← Prev
             </button>
@@ -595,9 +606,9 @@ export default function Dashboard() {
                   )}
                   <button
                     onClick={() => setPage(p)}
-                    className={`px-3 py-1.5 text-sm rounded-lg cursor-pointer ${
+                    className={`px-3 py-1.5 text-sm rounded-xl cursor-pointer transition-all ${
                       p === page
-                        ? "bg-green-700 text-white font-semibold"
+                        ? "bg-green-700 text-white font-semibold shadow-sm"
                         : "text-gray-700 hover:bg-gray-100"
                     }`}
                   >
@@ -608,7 +619,7 @@ export default function Dashboard() {
             <button
               onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
               disabled={page >= totalPages}
-              className="px-3 py-2 text-sm rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-100 disabled:opacity-40 disabled:cursor-default cursor-pointer"
+              className="px-3 py-2 text-sm rounded-xl border border-gray-300 text-gray-700 hover:bg-gray-100 disabled:opacity-40 disabled:cursor-default cursor-pointer shadow-sm hover:shadow-md transition-all"
             >
               Next →
             </button>

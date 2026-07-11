@@ -44,6 +44,7 @@ export default function Register() {
       if (phoneFields.includes(field)) {
         newVal = newVal.replace(/[^\d+]/g, '');
       }
+      newVal = immediateSentenceCase(field, newVal);
       setForm((prev) => {
         const next = { ...prev, [field]: newVal };
         const fieldErr = validateField(field, next)[field];
@@ -163,10 +164,12 @@ export default function Register() {
     return s.replace(/\w\S*/g, (w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase());
   }
 
+  function immediateSentenceCase(field, value) {
+    if (!sentenceCaseFields.includes(field)) return value;
+    return toSentenceCase(value);
+  }
+
   function handleBlur(field) {
-    if (sentenceCaseFields.includes(field) && form[field]) {
-      setForm((prev) => ({ ...prev, [field]: toSentenceCase(prev[field]) }));
-    }
     const fieldErr = validateField(field, form)[field];
     setErrors((prev) => {
       if (fieldErr) return { ...prev, [field]: fieldErr };
