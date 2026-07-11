@@ -436,7 +436,7 @@ export default function Register() {
           <button
             type="submit"
             disabled={!canSubmit || submitting}
-            className="w-full flex items-center justify-center gap-2 bg-green-700 hover:bg-green-800 active:bg-green-900 disabled:bg-emerald-400 text-white font-semibold py-3.5 sm:py-3 rounded-xl transition-all cursor-pointer min-h-[48px] shadow-sm hover:shadow-md"
+            className="w-full flex items-center justify-center gap-2 bg-green-700 hover:bg-green-800 active:bg-green-900 disabled:bg-emerald-400 text-white font-semibold py-3.5 sm:py-3 rounded-xl transition-all cursor-pointer disabled:cursor-not-allowed min-h-[48px] shadow-sm hover:shadow-md disabled:shadow-none"
           >
             <Send size={18} />
             {submitting ? "Submitting..." : "Submit Registration"}
