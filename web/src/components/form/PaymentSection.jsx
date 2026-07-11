@@ -40,9 +40,9 @@ export default function PaymentSection({ paymentStatus, onChange, file, setFile,
     (file && file.size > MAX_SIZE ? 'File must be under 5MB' : null)
 
   return (
-    <div className="border rounded-lg p-4 space-y-4">
+    <div className="space-y-4">
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
+        <label className="block text-base font-semibold text-gray-800 mb-2">
           Payment Status <RequiredBadge />
         </label>
         <div className="flex gap-4 mt-1">

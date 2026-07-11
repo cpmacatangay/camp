@@ -323,117 +323,123 @@ export default function Register() {
   const canSubmit = hasAllRequired && hasScreenshot;
 
   return (
-    <div className="max-w-2xl mx-auto px-4 py-10">
-      <div className="text-center mb-6 sm:mb-8">
-        <h1 className="text-2xl sm:text-3xl font-bold text-green-800">
+    <div className="max-w-2xl mx-auto px-4 py-8 sm:py-12">
+      <div className="text-center mb-8">
+        <h1 className="text-3xl sm:text-4xl font-bold text-green-800 tracking-tight">
           TRAILBLAZE
         </h1>
-        <p className="text-gray-500 mt-1">
+        <p className="text-gray-500 mt-2">
           Fill in all required fields to register
         </p>
       </div>
 
-      <form
-        onSubmit={handleSubmit}
-        className="space-y-5 bg-white rounded-2xl shadow-sm border p-4 sm:p-6"
-      >
-        {errors._form && (
-          <div className="bg-red-50 border border-red-200 text-red-700 rounded-lg px-4 py-3 text-sm">
-            {errors._form}
-          </div>
-        )}
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <TextField
-            label="Name"
-            value={form.name}
-            onChange={set("name")}
-            onBlur={() => handleBlur("name")}
-            error={errors.name}
-            required
-          />
-          <TextField
-            label="Nickname"
-            value={form.nickname}
-            onChange={set("nickname")}
-            onBlur={() => handleBlur("nickname")}
-            error={errors.nickname}
-            required
-          />
-          <DateField
-            label="Birth Date"
-            value={form.birthDate}
-            onChange={set("birthDate")}
-            onBlur={() => handleBlur("birthDate")}
-            error={errors.birthDate}
-            required
-          />
-          <TextField
-            label="Email"
-            type="email"
-            value={form.email}
-            onChange={set("email")}
-            onBlur={() => handleBlur("email")}
-            error={errors.email}
-            required
-          />
-          <TextField
-            label="Contact Number"
-            value={form.contactNumber}
-            onChange={set("contactNumber")}
-            onBlur={() => handleBlur("contactNumber")}
-            error={errors.contactNumber}
-            required
-          />
-          <TextField
-            label="Facebook Name"
-            value={form.facebookName}
-            onChange={set("facebookName")}
-            onBlur={() => handleBlur("facebookName")}
-            error={errors.facebookName}
-            required
-          />
-        </div>
-
-        <TextAreaField
-          label="Home Address"
-          value={form.homeAddress}
-          onChange={set("homeAddress")}
-          onBlur={() => handleBlur("homeAddress")}
-          error={errors.homeAddress}
-          required
-        />
-
-        <TextAreaField
-          label="Existing Sickness / Illness (optional)"
-          value={form.existingSickness}
-          onChange={set("existingSickness")}
-        />
-
-        <ParentsFieldset
-          values={form}
-          onChange={set}
-          errors={errors}
-          onBlur={handleBlur}
-        />
-
-        <PaymentSection
-          paymentStatus={form.paymentStatus}
-          onChange={set("paymentStatus")}
-          file={file}
-          setFile={setFile}
-          error={errors.paymentScreenshot}
-        />
-
-        <button
-          type="submit"
-          disabled={!canSubmit || submitting}
-          className="w-full flex items-center justify-center gap-2 bg-green-700 hover:bg-green-800 disabled:bg-emerald-400 text-white font-semibold py-3.5 sm:py-3 rounded-lg transition-colors cursor-pointer min-h-[48px]"
+      <div className="bg-white rounded-2xl shadow-sm border p-6 sm:p-8">
+        <form
+          onSubmit={handleSubmit}
+          className="space-y-6"
         >
-          <Send size={18} />
-          {submitting ? "Submitting..." : "Submit Registration"}
-        </button>
-      </form>
+          {errors._form && (
+            <div className="bg-red-50 border border-red-200 text-red-700 rounded-lg px-4 py-3 text-sm">
+              {errors._form}
+            </div>
+          )}
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <TextField
+              label="Name"
+              value={form.name}
+              onChange={set("name")}
+              onBlur={() => handleBlur("name")}
+              error={errors.name}
+              required
+            />
+            <TextField
+              label="Nickname"
+              value={form.nickname}
+              onChange={set("nickname")}
+              onBlur={() => handleBlur("nickname")}
+              error={errors.nickname}
+              required
+            />
+            <DateField
+              label="Birth Date"
+              value={form.birthDate}
+              onChange={set("birthDate")}
+              onBlur={() => handleBlur("birthDate")}
+              error={errors.birthDate}
+              required
+            />
+            <TextField
+              label="Email"
+              type="email"
+              value={form.email}
+              onChange={set("email")}
+              onBlur={() => handleBlur("email")}
+              error={errors.email}
+              required
+            />
+            <TextField
+              label="Contact Number"
+              value={form.contactNumber}
+              onChange={set("contactNumber")}
+              onBlur={() => handleBlur("contactNumber")}
+              error={errors.contactNumber}
+              required
+            />
+            <TextField
+              label="Facebook Name"
+              value={form.facebookName}
+              onChange={set("facebookName")}
+              onBlur={() => handleBlur("facebookName")}
+              error={errors.facebookName}
+              required
+            />
+          </div>
+
+          <TextAreaField
+            label="Home Address"
+            value={form.homeAddress}
+            onChange={set("homeAddress")}
+            onBlur={() => handleBlur("homeAddress")}
+            error={errors.homeAddress}
+            required
+          />
+
+          <TextAreaField
+            label="Existing Sickness / Illness (optional)"
+            value={form.existingSickness}
+            onChange={set("existingSickness")}
+          />
+
+          <hr className="border-gray-200" />
+
+          <ParentsFieldset
+            values={form}
+            onChange={set}
+            errors={errors}
+            onBlur={handleBlur}
+          />
+
+          <hr className="border-gray-200" />
+
+          <PaymentSection
+            paymentStatus={form.paymentStatus}
+            onChange={set("paymentStatus")}
+            file={file}
+            setFile={setFile}
+            error={errors.paymentScreenshot}
+          />
+
+          <button
+            type="submit"
+            disabled={!canSubmit || submitting}
+            className="w-full flex items-center justify-center gap-2 bg-green-700 hover:bg-green-800 active:bg-green-900 disabled:bg-emerald-400 text-white font-semibold py-3.5 sm:py-3 rounded-xl transition-all cursor-pointer min-h-[48px] shadow-sm hover:shadow-md"
+          >
+            <Send size={18} />
+            {submitting ? "Submitting..." : "Submit Registration"}
+          </button>
+        </form>
+      </div>
     </div>
   );
 }

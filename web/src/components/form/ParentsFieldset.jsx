@@ -9,9 +9,9 @@ export default function ParentsFieldset({ values, onChange, errors, onBlur }) {
   ]
 
   return (
-    <fieldset className="border rounded-lg p-4">
-      <legend className="text-sm font-medium text-gray-700 px-2">Parents / Guardian Information</legend>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
+    <div>
+      <p className="text-base font-semibold text-gray-800 mb-3">Parents / Guardian Information</p>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {fields.map((f) => (
           <TextField
             key={f.name}
@@ -24,6 +24,6 @@ export default function ParentsFieldset({ values, onChange, errors, onBlur }) {
           />
         ))}
       </div>
-    </fieldset>
+    </div>
   )
 }
