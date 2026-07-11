@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react'
 import { X, CheckCircle2, Circle } from 'lucide-react'
 import useModalA11y from '../hooks/useModalA11y'
-import client from '../api/client'
 
 export default function ViewParticipantModal({ open, participant, onClose }) {
   const { modalRef, titleId } = useModalA11y(open, onClose)
@@ -11,8 +10,13 @@ export default function ViewParticipantModal({ open, participant, onClose }) {
     setScreenshotSrc(null)
     if (!participant?.paymentScreenshotUrl) return
     let cancelled = false
-    client.get(participant.paymentScreenshotUrl, { responseType: 'blob' })
-      .then(({ data }) => { if (!cancelled) setScreenshotSrc(URL.createObjectURL(data)) })
+    const apiUrl = import.meta.env.VITE_API_URL || ''
+    const token = (() => { try { const u = JSON.parse(localStorage.getItem('camp_user')); return u?.token } catch { return null } })()
+    fetch(`${apiUrl}/api${participant.paymentScreenshotUrl}`, {
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+    })
+      .then((res) => { if (!res.ok) throw new Error(); return res.blob() })
+      .then((blob) => { if (!cancelled) setScreenshotSrc(URL.createObjectURL(blob)) })
       .catch(() => { if (!cancelled) setScreenshotSrc('error') })
     return () => { cancelled = true }
   }, [participant])
