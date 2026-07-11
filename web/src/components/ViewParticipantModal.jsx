@@ -130,6 +130,7 @@ export default function ViewParticipantModal({ open, participant, onClose }) {
                     <p className="text-sm text-red-500">Failed to load screenshot</p>
                   ) : screenshotSrc ? (
                     <img
+                      key={screenshotSrc}
                       src={screenshotSrc}
                       alt="Payment screenshot"
                       className="h-32 w-auto rounded-lg border object-cover"
