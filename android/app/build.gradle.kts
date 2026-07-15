@@ -3,6 +3,13 @@ plugins {
     alias(libs.plugins.compose)
 }
 
+import java.util.Properties
+
+val keystoreProps = Properties().apply {
+    val file = rootProject.file("app/keystore.properties")
+    if (file.exists()) load(file.inputStream())
+}
+
 android {
     namespace = "com.example.qrs"
     compileSdk {
@@ -23,8 +30,20 @@ android {
         buildConfigField("String", "SERVER_BASE_URL", "\"https://camp-96fi.onrender.com\"")
     }
 
+    signingConfigs {
+        create("release") {
+            storeFile = keystoreProps.getProperty("storeFile")?.let {
+                rootProject.file("app/$it")
+            }
+            storePassword = keystoreProps.getProperty("storePassword")
+            keyAlias = keystoreProps.getProperty("keyAlias")
+            keyPassword = keystoreProps.getProperty("keyPassword")
+        }
+    }
+
     buildTypes {
         release {
+            signingConfig = signingConfigs.getByName("release")
             optimization {
                 enable = false
             }

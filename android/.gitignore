@@ -1,6 +1,9 @@
 *.iml
 .gradle
 /local.properties
+**/release.keystore
+**/keystore.properties
+**/keystore-passwords.txt
 /.idea/caches
 /.idea/libraries
 /.idea/modules.xml
