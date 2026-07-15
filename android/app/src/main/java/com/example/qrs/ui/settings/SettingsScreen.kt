@@ -1,23 +1,30 @@
 package com.example.qrs.ui.settings
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material.icons.filled.Dns
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -31,15 +38,17 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.example.qrs.BuildConfig
 import com.example.qrs.QRSApp
 import com.example.qrs.data.remote.NetworkModule
 import com.example.qrs.ui.theme.QRSCheckinTheme
-import com.example.qrs.ui.theme.OnSecondaryContainer
-import com.example.qrs.ui.theme.SecondaryContainer
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -54,6 +63,7 @@ fun SettingsScreen(
 
     val email = remember { authStore.getEmail() ?: "" }
     val role = remember { authStore.getRole() ?: "" }
+    val initials = remember { email.firstOrNull()?.uppercase() ?: "?" }
 
     val serverUrl by settingsStore.serverBaseUrl.collectAsState(
         initial = BuildConfig.SERVER_BASE_URL
@@ -66,41 +76,6 @@ fun SettingsScreen(
         saved = false
     }
 
-    SettingsContent(
-        email = email,
-        role = role,
-        urlInput = urlInput,
-        onUrlInputChange = {
-            urlInput = it
-            saved = false
-        },
-        saved = saved,
-        onSave = {
-            scope.launch {
-                settingsStore.setServerBaseUrl(urlInput)
-                NetworkModule.baseUrl = urlInput
-                saved = true
-            }
-        },
-        saveEnabled = urlInput != serverUrl,
-        onLogout = onLogout,
-        onBack = onBack
-    )
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun SettingsContent(
-    email: String,
-    role: String,
-    urlInput: String,
-    onUrlInputChange: (String) -> Unit,
-    saved: Boolean,
-    onSave: () -> Unit,
-    saveEnabled: Boolean,
-    onLogout: () -> Unit,
-    onBack: () -> Unit
-) {
     Scaffold(
         topBar = {
             TopAppBar(
@@ -119,75 +94,164 @@ private fun SettingsContent(
             )
         }
     ) { padding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding)
-                .padding(16.dp)
-        ) {
-            Text(
-                text = "Account",
-                style = MaterialTheme.typography.titleSmall
-            )
-            Spacer(Modifier.height(8.dp))
+        SettingsContent(
+            email = email,
+            role = role,
+            initials = initials,
+            urlInput = urlInput,
+            onUrlInputChange = { urlInput = it; saved = false },
+            saved = saved,
+            saveEnabled = urlInput != serverUrl,
+            onSave = {
+                scope.launch {
+                    settingsStore.setServerBaseUrl(urlInput)
+                    NetworkModule.baseUrl = urlInput
+                    saved = true
+                }
+            },
+            onLogout = onLogout,
+            modifier = Modifier.padding(padding)
+        )
+    }
+}
 
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                colors = CardDefaults.cardColors(
-                    containerColor = SecondaryContainer
-                )
+@Composable
+private fun SettingsContent(
+    email: String,
+    role: String,
+    initials: String,
+    urlInput: String,
+    onUrlInputChange: (String) -> Unit,
+    saved: Boolean,
+    saveEnabled: Boolean,
+    onSave: () -> Unit,
+    onLogout: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Column(
+        modifier = modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState())
+            .padding(16.dp)
+    ) {
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(20.dp),
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+            )
+        ) {
+            Column(
+                modifier = Modifier.padding(20.dp).fillMaxWidth(),
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Column(modifier = Modifier.padding(16.dp)) {
+                Box(
+                    modifier = Modifier
+                        .size(72.dp)
+                        .clip(CircleShape)
+                        .background(MaterialTheme.colorScheme.primary),
+                    contentAlignment = Alignment.Center
+                ) {
                     Text(
-                        text = email,
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = OnSecondaryContainer
+                        text = initials,
+                        color = MaterialTheme.colorScheme.onPrimary,
+                        fontSize = 28.sp,
+                        fontWeight = FontWeight.Bold
                     )
+                }
+
+                Spacer(Modifier.height(12.dp))
+
+                Text(
+                    text = email,
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+
+                Spacer(Modifier.height(4.dp))
+
+                Card(
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.primaryContainer
+                    ),
+                    shape = RoundedCornerShape(8.dp)
+                ) {
                     Text(
-                        text = "Role: $role",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = OnSecondaryContainer.copy(alpha = 0.7f)
+                        text = role.replaceFirstChar { it.uppercase() },
+                        color = MaterialTheme.colorScheme.onPrimaryContainer,
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Medium,
+                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp)
                     )
                 }
             }
+        }
 
-            Spacer(Modifier.height(28.dp))
+        Spacer(Modifier.height(28.dp))
 
-            Text(
-                text = "Server URL",
-                style = MaterialTheme.typography.titleSmall
-            )
-            Spacer(Modifier.height(8.dp))
+        Text(
+            text = "Server",
+            style = MaterialTheme.typography.titleSmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+        Spacer(Modifier.height(8.dp))
 
-            OutlinedTextField(
-                value = urlInput,
-                onValueChange = onUrlInputChange,
-                label = { Text("Base URL") },
-                placeholder = { Text("https://camp-96fi.onrender.com") },
-                leadingIcon = {
-                    Icon(
-                        imageVector = Icons.Filled.Dns,
-                        contentDescription = null
-                    )
-                },
-                singleLine = true,
-                modifier = Modifier.fillMaxWidth()
-            )
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(16.dp)
+        ) {
+            Column(modifier = Modifier.padding(16.dp)) {
+                OutlinedTextField(
+                    value = urlInput,
+                    onValueChange = onUrlInputChange,
+                    label = { Text("Base URL") },
+                    placeholder = { Text("https://camp-96fi.onrender.com") },
+                    leadingIcon = {
+                        Icon(
+                            imageVector = Icons.Filled.Dns,
+                            contentDescription = null
+                        )
+                    },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth()
+                )
 
-            Spacer(Modifier.height(8.dp))
+                Spacer(Modifier.height(8.dp))
 
-            Button(
-                onClick = onSave,
-                enabled = saveEnabled
-            ) {
-                Text(if (saved) "Saved!" else "Save")
+                Button(
+                    onClick = onSave,
+                    enabled = saveEnabled,
+                    shape = RoundedCornerShape(12.dp),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(if (saved) "Saved!" else "Save")
+                }
             }
+        }
 
-            Spacer(Modifier.height(32.dp))
+        Spacer(Modifier.height(28.dp))
 
-            OutlinedButton(
+        Text(
+            text = "Actions",
+            style = MaterialTheme.typography.titleSmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+        Spacer(Modifier.height(8.dp))
+
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(16.dp)
+        ) {
+            Button(
                 onClick = onLogout,
-                modifier = Modifier.fillMaxWidth()
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.errorContainer,
+                    contentColor = MaterialTheme.colorScheme.onErrorContainer
+                ),
+                shape = RoundedCornerShape(12.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp)
             ) {
                 Icon(
                     imageVector = Icons.AutoMirrored.Filled.ExitToApp,
@@ -197,6 +261,8 @@ private fun SettingsContent(
                 Text("Logout")
             }
         }
+
+        Spacer(Modifier.height(24.dp))
     }
 }
 
@@ -207,13 +273,13 @@ private fun SettingsAdminPreview() {
         SettingsContent(
             email = "admin@camp.com",
             role = "admin",
+            initials = "A",
             urlInput = "https://camp-96fi.onrender.com",
             onUrlInputChange = {},
             saved = false,
-            onSave = {},
             saveEnabled = false,
-            onLogout = {},
-            onBack = {}
+            onSave = {},
+            onLogout = {}
         )
     }
 }
@@ -225,13 +291,13 @@ private fun SettingsStaffPreview() {
         SettingsContent(
             email = "scanner@camp.com",
             role = "staff",
+            initials = "S",
             urlInput = "https://camp-96fi.onrender.com",
             onUrlInputChange = {},
             saved = true,
-            onSave = {},
             saveEnabled = false,
-            onLogout = {},
-            onBack = {}
+            onSave = {},
+            onLogout = {}
         )
     }
 }

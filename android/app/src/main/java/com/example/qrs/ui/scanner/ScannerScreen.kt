@@ -13,9 +13,16 @@ import androidx.camera.core.ImageProxy
 import androidx.camera.core.Preview as CameraPreview
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.LinearEasing
-import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -62,8 +69,13 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.CompositingStrategy
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalContext
@@ -204,54 +216,71 @@ fun ScannerScreen(
             )
         }
 
-        Column(modifier = Modifier.fillMaxSize().statusBarsPadding()) {
-            TopAppBar(
-                title = { Text("Scanner") },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color.Black.copy(alpha = 0.3f),
-                    titleContentColor = Color.White
-                ),
-                actions = {
-                    IconButton(onClick = { torchOn = !torchOn }) {
-                        Icon(
-                            imageVector = if (torchOn) Icons.Filled.FlashOff else Icons.Filled.FlashOn,
-                            contentDescription = "Flash",
-                            tint = Color.White
-                        )
-                    }
-                    IconButton(onClick = onSettings) {
-                        Icon(
-                            imageVector = Icons.Filled.Settings,
-                            contentDescription = "Settings",
-                            tint = Color.White
-                        )
-                    }
-                    IconButton(onClick = onLogout) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ExitToApp,
-                            contentDescription = "Logout",
-                            tint = Color.White
-                        )
-                    }
-                }
+        Canvas(
+            modifier = Modifier
+                .fillMaxSize()
+                .graphicsLayer(compositingStrategy = CompositingStrategy.Offscreen)
+        ) {
+            val rectSize = 240.dp.toPx()
+            val left = (size.width - rectSize) / 2
+            val top = (size.height - rectSize) / 2
+            drawRect(Color.Black.copy(alpha = 0.45f))
+            drawRoundRect(
+                color = Color.Transparent,
+                topLeft = Offset(left, top),
+                size = Size(rectSize, rectSize),
+                cornerRadius = CornerRadius(12.dp.toPx()),
+                blendMode = BlendMode.Clear
             )
-
-            Spacer(Modifier.weight(1f))
-
-            ScanFrame(modifier = Modifier.size(240.dp).align(Alignment.CenterHorizontally))
-
-            Spacer(Modifier.weight(1f))
-
-            Text(
-                text = "Align QR code within the frame",
-                color = Color.White.copy(alpha = 0.7f),
-                textAlign = TextAlign.Center,
-                fontSize = 14.sp,
-                modifier = Modifier.fillMaxWidth().padding(horizontal = 32.dp)
-            )
-
-            Spacer(Modifier.height(100.dp))
         }
+
+        ScanFrame(
+            modifier = Modifier
+                .size(240.dp)
+                .align(Alignment.Center)
+        )
+
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .statusBarsPadding()
+                .align(Alignment.TopCenter),
+            horizontalArrangement = Arrangement.End,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            IconButton(onClick = { torchOn = !torchOn }) {
+                Icon(
+                    imageVector = if (torchOn) Icons.Filled.FlashOff else Icons.Filled.FlashOn,
+                    contentDescription = "Flash",
+                    tint = Color.White
+                )
+            }
+            IconButton(onClick = onSettings) {
+                Icon(
+                    imageVector = Icons.Filled.Settings,
+                    contentDescription = "Settings",
+                    tint = Color.White
+                )
+            }
+            IconButton(onClick = onLogout) {
+                Icon(
+                    imageVector = Icons.AutoMirrored.Filled.ExitToApp,
+                    contentDescription = "Logout",
+                    tint = Color.White
+                )
+            }
+        }
+
+        Text(
+            text = "Align QR code within the frame",
+            color = Color.White.copy(alpha = 0.7f),
+            textAlign = TextAlign.Center,
+            fontSize = 14.sp,
+            modifier = Modifier
+                .fillMaxWidth()
+                .align(Alignment.BottomCenter)
+                .padding(bottom = 100.dp, start = 32.dp, end = 32.dp)
+        )
 
         ScanResultOverlay(scanState)
     }
@@ -271,6 +300,16 @@ fun ScannerScreen(
 
 @Composable
 private fun ScanFrame(modifier: Modifier = Modifier) {
+    val infiniteTransition = rememberInfiniteTransition()
+    val scanLineProgress by infiniteTransition.animateFloat(
+        initialValue = 0f,
+        targetValue = 1f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(2200, easing = LinearEasing),
+            repeatMode = RepeatMode.Reverse
+        )
+    )
+
     Box(modifier = modifier, contentAlignment = Alignment.Center) {
         Canvas(modifier = Modifier.fillMaxSize()) {
             val s = 4.dp.toPx()
@@ -290,42 +329,62 @@ private fun ScanFrame(modifier: Modifier = Modifier) {
 
             drawLine(c, Offset(w - l, h), Offset(w, h), s)
             drawLine(c, Offset(w, h - l), Offset(w, h), s)
+
+            val lineY = 4.dp.toPx() + (h - 8.dp.toPx()) * scanLineProgress
+            val lineStart = 4.dp.toPx()
+            val lineEnd = w - 4.dp.toPx()
+            drawLine(
+                color = Color.White.copy(alpha = 0.8f),
+                start = Offset(lineStart, lineY),
+                end = Offset(lineEnd, lineY),
+                strokeWidth = 2.dp.toPx()
+            )
         }
     }
 }
 
 @Composable
 private fun ScanResultOverlay(state: ScanState) {
-    when (state) {
-        is ScanState.Success -> ScanResultContent(
-            color = ScanSuccess,
-            icon = Icons.Filled.CheckCircle,
-            title = "Checked In",
-            subtitle = state.name,
-            paymentStatus = state.paymentStatus
-        )
-        is ScanState.AlreadyIn -> ScanResultContent(
-            color = ScanWarning,
-            icon = Icons.Filled.HourglassEmpty,
-            title = "Already Checked In",
-            subtitle = state.name,
-            paymentStatus = null
-        )
-        is ScanState.Invalid -> ScanResultContent(
-            color = ScanError,
-            icon = Icons.Filled.Cancel,
-            title = "Invalid QR",
-            subtitle = state.message,
-            paymentStatus = null
-        )
-        is ScanState.Error -> ScanResultContent(
-            color = ScanError,
-            icon = Icons.Filled.Error,
-            title = "Error",
-            subtitle = state.message,
-            paymentStatus = null
-        )
-        is ScanState.Scanning -> Box(
+    AnimatedVisibility(
+        visible = state !is ScanState.Idle && state !is ScanState.Scanning,
+        enter = scaleIn(animationSpec = tween(300)) + fadeIn(tween(300)),
+        exit = fadeOut(tween(200))
+    ) {
+        when (state) {
+            is ScanState.Success -> ScanResultContent(
+                color = ScanSuccess,
+                icon = Icons.Filled.CheckCircle,
+                title = "Checked In",
+                subtitle = state.name,
+                paymentStatus = state.paymentStatus
+            )
+            is ScanState.AlreadyIn -> ScanResultContent(
+                color = ScanWarning,
+                icon = Icons.Filled.HourglassEmpty,
+                title = "Already Checked In",
+                subtitle = state.name,
+                paymentStatus = null
+            )
+            is ScanState.Invalid -> ScanResultContent(
+                color = ScanError,
+                icon = Icons.Filled.Cancel,
+                title = "Invalid QR",
+                subtitle = state.message,
+                paymentStatus = null
+            )
+            is ScanState.Error -> ScanResultContent(
+                color = ScanError,
+                icon = Icons.Filled.Error,
+                title = "Error",
+                subtitle = state.message,
+                paymentStatus = null
+            )
+            else -> {}
+        }
+    }
+
+    if (state is ScanState.Scanning) {
+        Box(
             modifier = Modifier.fillMaxSize(),
             contentAlignment = Alignment.Center
         ) {
@@ -336,7 +395,6 @@ private fun ScanResultOverlay(state: ScanState) {
                 fontWeight = FontWeight.Bold
             )
         }
-        is ScanState.Idle -> {}
     }
 }
 

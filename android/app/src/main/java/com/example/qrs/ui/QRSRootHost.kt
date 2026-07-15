@@ -1,5 +1,10 @@
 package com.example.qrs.ui
 
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.runtime.Composable
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -18,7 +23,13 @@ fun QRSRootHost() {
     val startDest = if (hasToken) "scanner" else "login"
 
     NavHost(navController = navController, startDestination = startDest) {
-        composable("login") {
+        composable(
+            route = "login",
+            enterTransition = { fadeIn(tween(300)) + slideInHorizontally(tween(300)) { it / 4 } },
+            exitTransition = { fadeOut(tween(200)) },
+            popEnterTransition = { fadeIn(tween(300)) },
+            popExitTransition = { fadeOut(tween(200)) + slideOutHorizontally(tween(200)) { it / 4 } }
+        ) {
             LoginScreen(
                 onLoginSuccess = {
                     navController.navigate("scanner") {
@@ -27,7 +38,13 @@ fun QRSRootHost() {
                 }
             )
         }
-        composable("scanner") {
+        composable(
+            route = "scanner",
+            enterTransition = { fadeIn(tween(300)) },
+            exitTransition = { fadeOut(tween(200)) },
+            popEnterTransition = { fadeIn(tween(300)) },
+            popExitTransition = { fadeOut(tween(200)) }
+        ) {
             ScannerScreen(
                 onLogout = {
                     authStore.clear()
@@ -41,7 +58,13 @@ fun QRSRootHost() {
                 }
             )
         }
-        composable("settings") {
+        composable(
+            route = "settings",
+            enterTransition = { fadeIn(tween(300)) + slideInHorizontally(tween(300)) { it / 4 } },
+            exitTransition = { fadeOut(tween(200)) },
+            popEnterTransition = { fadeIn(tween(300)) },
+            popExitTransition = { fadeOut(tween(200)) + slideOutHorizontally(tween(200)) { it / 4 } }
+        ) {
             SettingsScreen(
                 onLogout = {
                     authStore.clear()
