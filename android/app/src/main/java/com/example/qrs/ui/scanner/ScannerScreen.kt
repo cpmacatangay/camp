@@ -10,7 +10,6 @@ import androidx.camera.core.Camera
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.ImageProxy
-import androidx.camera.core.Preview as CameraPreview
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
 import androidx.compose.animation.AnimatedVisibility
@@ -36,13 +35,12 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ExitToApp
-import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Cancel
+import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Error
 import androidx.compose.material.icons.filled.FlashOff
 import androidx.compose.material.icons.filled.FlashOn
@@ -56,9 +54,6 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -80,7 +75,6 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
-import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -88,6 +82,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.qrs.ui.theme.QRSCheckinTheme
@@ -97,8 +92,9 @@ import com.example.qrs.ui.theme.ScanWarning
 import com.google.mlkit.vision.barcode.BarcodeScanning
 import com.google.mlkit.vision.barcode.common.Barcode
 import com.google.mlkit.vision.common.InputImage
-import java.util.concurrent.Executors
 import kotlinx.coroutines.delay
+import java.util.concurrent.Executors
+import androidx.camera.core.Preview as CameraPreview
 
 @SuppressLint("UnsafeOptInUsageError")
 private fun ImageProxy.getImageOrNull() = image
@@ -106,9 +102,7 @@ private fun ImageProxy.getImageOrNull() = image
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ScannerScreen(
-    viewModel: ScannerViewModel = viewModel(),
-    onLogout: () -> Unit,
-    onSettings: () -> Unit
+    viewModel: ScannerViewModel = viewModel(), onLogout: () -> Unit, onSettings: () -> Unit
 ) {
     val scanState by viewModel.scanState.collectAsStateWithLifecycle()
     val context = LocalContext.current
@@ -117,8 +111,10 @@ fun ScannerScreen(
 
     var hasCameraPermission by remember {
         mutableStateOf(
-            ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA) ==
-                PackageManager.PERMISSION_GRANTED
+            ContextCompat.checkSelfPermission(
+                context,
+                Manifest.permission.CAMERA
+            ) == PackageManager.PERMISSION_GRANTED
         )
     }
     var cameraProvider by remember { mutableStateOf<ProcessCameraProvider?>(null) }
@@ -160,8 +156,7 @@ fun ScannerScreen(
     Box(modifier = Modifier.fillMaxSize()) {
         if (hasCameraPermission) {
             AndroidView(
-                modifier = Modifier.fillMaxSize(),
-                factory = { ctx ->
+                modifier = Modifier.fillMaxSize(), factory = { ctx ->
                     val previewView = PreviewView(ctx).apply {
                         scaleType = PreviewView.ScaleType.FILL_CENTER
                     }
@@ -172,12 +167,11 @@ fun ScannerScreen(
                         cameraProvider = provider
 
                         val preview = CameraPreview.Builder().build()
-                        preview.setSurfaceProvider(previewView.surfaceProvider)
+                        preview.surfaceProvider = previewView.surfaceProvider
 
                         val barcodeScanner = BarcodeScanning.getClient(
                             com.google.mlkit.vision.barcode.BarcodeScannerOptions.Builder()
-                                .setBarcodeFormats(Barcode.FORMAT_QR_CODE)
-                                .build()
+                                .setBarcodeFormats(Barcode.FORMAT_QR_CODE).build()
                         )
 
                         val analysis = ImageAnalysis.Builder()
@@ -187,14 +181,12 @@ fun ScannerScreen(
                         analysis.setAnalyzer(Executors.newSingleThreadExecutor()) { proxy: ImageProxy ->
                             proxy.getImageOrNull()?.let { mediaImage ->
                                 val inputImage = InputImage.fromMediaImage(
-                                    mediaImage,
-                                    proxy.imageInfo.rotationDegrees
+                                    mediaImage, proxy.imageInfo.rotationDegrees
                                 )
                                 barcodeScanner.process(inputImage)
                                     .addOnSuccessListener { barcodes ->
                                         barcodes.firstOrNull()?.rawValue?.let(onQrScanned)
-                                    }
-                                    .addOnCompleteListener { proxy.close() }
+                                    }.addOnCompleteListener { proxy.close() }
                             } ?: proxy.close()
                         }
 
@@ -212,8 +204,7 @@ fun ScannerScreen(
                     }, ContextCompat.getMainExecutor(ctx))
 
                     previewView
-                }
-            )
+                })
         }
 
         Canvas(
@@ -287,12 +278,10 @@ fun ScannerScreen(
 
     if (!hasCameraPermission) {
         Box(
-            modifier = Modifier.fillMaxSize(),
-            contentAlignment = Alignment.Center
+            modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center
         ) {
             Text(
-                text = "Camera permission required",
-                style = MaterialTheme.typography.bodyLarge
+                text = "Camera permission required", style = MaterialTheme.typography.bodyLarge
             )
         }
     }
@@ -302,11 +291,8 @@ fun ScannerScreen(
 private fun ScanFrame(modifier: Modifier = Modifier) {
     val infiniteTransition = rememberInfiniteTransition()
     val scanLineProgress by infiniteTransition.animateFloat(
-        initialValue = 0f,
-        targetValue = 1f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(2200, easing = LinearEasing),
-            repeatMode = RepeatMode.Reverse
+        initialValue = 0f, targetValue = 1f, animationSpec = infiniteRepeatable(
+            animation = tween(2200, easing = LinearEasing), repeatMode = RepeatMode.Reverse
         )
     )
 
@@ -358,6 +344,7 @@ private fun ScanResultOverlay(state: ScanState) {
                 subtitle = state.name,
                 paymentStatus = state.paymentStatus
             )
+
             is ScanState.AlreadyIn -> ScanResultContent(
                 color = ScanWarning,
                 icon = Icons.Filled.HourglassEmpty,
@@ -365,6 +352,7 @@ private fun ScanResultOverlay(state: ScanState) {
                 subtitle = state.name,
                 paymentStatus = null
             )
+
             is ScanState.Invalid -> ScanResultContent(
                 color = ScanError,
                 icon = Icons.Filled.Cancel,
@@ -372,6 +360,7 @@ private fun ScanResultOverlay(state: ScanState) {
                 subtitle = state.message,
                 paymentStatus = null
             )
+
             is ScanState.Error -> ScanResultContent(
                 color = ScanError,
                 icon = Icons.Filled.Error,
@@ -379,14 +368,14 @@ private fun ScanResultOverlay(state: ScanState) {
                 subtitle = state.message,
                 paymentStatus = null
             )
+
             else -> {}
         }
     }
 
     if (state is ScanState.Scanning) {
         Box(
-            modifier = Modifier.fillMaxSize(),
-            contentAlignment = Alignment.Center
+            modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center
         ) {
             Text(
                 text = "Scanning...",
@@ -400,11 +389,7 @@ private fun ScanResultOverlay(state: ScanState) {
 
 @Composable
 private fun ScanResultContent(
-    color: Color,
-    icon: ImageVector,
-    title: String,
-    subtitle: String?,
-    paymentStatus: String?
+    color: Color, icon: ImageVector, title: String, subtitle: String?, paymentStatus: String?
 ) {
     var progress by remember { mutableFloatStateOf(1f) }
 
@@ -437,11 +422,15 @@ private fun ScanResultContent(
             )
         ) {
             Column(
-                modifier = Modifier.padding(28.dp).fillMaxWidth(),
+                modifier = Modifier
+                    .padding(28.dp)
+                    .fillMaxWidth(),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Box(
-                    modifier = Modifier.size(72.dp).background(color, CircleShape),
+                    modifier = Modifier
+                        .size(72.dp)
+                        .background(color, CircleShape),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
@@ -455,10 +444,7 @@ private fun ScanResultContent(
                 Spacer(Modifier.height(16.dp))
 
                 Text(
-                    text = title,
-                    fontSize = 22.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = color
+                    text = title, fontSize = 22.sp, fontWeight = FontWeight.Bold, color = color
                 )
 
                 if (subtitle != null && subtitle.isNotBlank()) {
@@ -477,8 +463,7 @@ private fun ScanResultContent(
                     Card(
                         colors = CardDefaults.cardColors(
                             containerColor = if (isPaid) ScanSuccess else ScanWarning
-                        ),
-                        shape = RoundedCornerShape(8.dp)
+                        ), shape = RoundedCornerShape(8.dp)
                     ) {
                         Text(
                             text = if (isPaid) "Paid" else "Unpaid",
@@ -494,7 +479,9 @@ private fun ScanResultContent(
 
                 LinearProgressIndicator(
                     progress = { progress },
-                    modifier = Modifier.fillMaxWidth().height(4.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(4.dp),
                     color = color,
                     trackColor = color.copy(alpha = 0.2f),
                 )
@@ -507,7 +494,11 @@ private fun ScanResultContent(
 @Composable
 private fun ScanFramePreview() {
     QRSCheckinTheme {
-        Box(Modifier.fillMaxSize().background(Color.DarkGray), contentAlignment = Alignment.Center) {
+        Box(
+            Modifier
+                .fillMaxSize()
+                .background(Color.DarkGray), contentAlignment = Alignment.Center
+        ) {
             ScanFrame(modifier = Modifier.size(240.dp))
         }
     }

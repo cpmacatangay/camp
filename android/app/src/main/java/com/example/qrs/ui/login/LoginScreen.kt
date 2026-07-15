@@ -5,7 +5,6 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -18,7 +17,6 @@ import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -42,7 +40,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.graphicsLayer
@@ -52,10 +49,8 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.qrs.R
@@ -63,8 +58,7 @@ import com.example.qrs.ui.theme.QRSCheckinTheme
 
 @Composable
 fun LoginScreen(
-    viewModel: LoginViewModel = viewModel(),
-    onLoginSuccess: () -> Unit
+    viewModel: LoginViewModel = viewModel(), onLoginSuccess: () -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     var email by remember { mutableStateOf("") }
@@ -93,8 +87,7 @@ fun LoginScreen(
         onTogglePassword = { passwordVisible = !passwordVisible },
         state = state,
         onLogin = { viewModel.login(email, password) },
-        onDone = { viewModel.login(email, password) }
-    )
+        onDone = { viewModel.login(email, password) })
 }
 
 @Composable
@@ -115,12 +108,10 @@ private fun LoginForm(
     LaunchedEffect(Unit) { contentVisible = true }
 
     val cardScale by animateFloatAsState(
-        targetValue = if (contentVisible) 1f else 0.92f,
-        animationSpec = tween(400)
+        targetValue = if (contentVisible) 1f else 0.92f, animationSpec = tween(400)
     )
     val cardAlpha by animateFloatAsState(
-        targetValue = if (contentVisible) 1f else 0f,
-        animationSpec = tween(400)
+        targetValue = if (contentVisible) 1f else 0f, animationSpec = tween(400)
     )
 
     Column(
@@ -146,14 +137,8 @@ private fun LoginForm(
         Image(
             painter = painterResource(R.drawable.login_logo),
             contentDescription = "App logo",
-            modifier = Modifier
-                .size(150.dp)
-//                .clip(CircleShape)
-//                .background(MaterialTheme.colorScheme.primary)
-//                .padding(16.dp)
+            modifier = Modifier.size(150.dp)
         )
-
-//        Spacer(Modifier.height(12.dp))
 
         Card(
             modifier = Modifier
@@ -171,12 +156,10 @@ private fun LoginForm(
                     onValueChange = onEmailChange,
                     label = { Text("Email") },
                     keyboardOptions = KeyboardOptions(
-                        keyboardType = KeyboardType.Email,
-                        imeAction = ImeAction.Next
+                        keyboardType = KeyboardType.Email, imeAction = ImeAction.Next
                     ),
                     keyboardActions = KeyboardActions(
-                        onNext = { focusManager.moveFocus(FocusDirection.Down) }
-                    ),
+                        onNext = { focusManager.moveFocus(FocusDirection.Down) }),
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth()
                 )
@@ -190,23 +173,20 @@ private fun LoginForm(
                     visualTransformation = if (passwordVisible) VisualTransformation.None
                     else PasswordVisualTransformation(),
                     keyboardOptions = KeyboardOptions(
-                        keyboardType = KeyboardType.Password,
-                        imeAction = ImeAction.Done
+                        keyboardType = KeyboardType.Password, imeAction = ImeAction.Done
                     ),
                     keyboardActions = KeyboardActions(
                         onDone = {
                             focusManager.clearFocus()
                             onDone()
-                        }
-                    ),
+                        }),
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth(),
                     trailingIcon = {
                         TextButton(onClick = onTogglePassword) {
                             Text(if (passwordVisible) "Hide" else "Show")
                         }
-                    }
-                )
+                    })
 
                 Spacer(Modifier.height(20.dp))
 
@@ -269,8 +249,7 @@ private fun LoginFormIdlePreview() {
             onTogglePassword = {},
             state = LoginState.Idle,
             onLogin = {},
-            onDone = {}
-        )
+            onDone = {})
     }
 }
 
@@ -287,8 +266,7 @@ private fun LoginFormFilledPreview() {
             onTogglePassword = {},
             state = LoginState.Idle,
             onLogin = {},
-            onDone = {}
-        )
+            onDone = {})
     }
 }
 
@@ -305,8 +283,7 @@ private fun LoginFormLoadingPreview() {
             onTogglePassword = {},
             state = LoginState.Loading,
             onLogin = {},
-            onDone = {}
-        )
+            onDone = {})
     }
 }
 
@@ -323,7 +300,6 @@ private fun LoginFormErrorPreview() {
             onTogglePassword = {},
             state = LoginState.Error("Invalid email or password"),
             onLogin = {},
-            onDone = {}
-        )
+            onDone = {})
     }
 }
