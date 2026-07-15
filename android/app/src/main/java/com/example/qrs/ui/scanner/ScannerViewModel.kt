@@ -68,7 +68,16 @@ class ScannerViewModel : ViewModel() {
                             NetworkModule.setToken(null)
                             _scanState.value = ScanState.Error("Session expired — log in again")
                         }
-                        else -> _scanState.value = ScanState.Error("Server error (${response.code()})")
+                        else -> {
+                            val errMsg = try {
+                                response.errorBody()?.string()?.let {
+                                    Gson().fromJson(it, Map::class.java)["message"]?.toString()
+                                }
+                            } catch (_: Exception) { null }
+                            _scanState.value = ScanState.Error(
+                                "Server error (${response.code()})${errMsg?.let { ": $it" } ?: ""}"
+                            )
+                        }
                     }
                 }
             } catch (e: HttpException) {

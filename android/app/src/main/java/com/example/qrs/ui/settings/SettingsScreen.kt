@@ -163,7 +163,7 @@ private fun SettingsContent(
                 value = urlInput,
                 onValueChange = onUrlInputChange,
                 label = { Text("Base URL") },
-                placeholder = { Text("http://192.168.1.13:5000") },
+                placeholder = { Text("https://camp-96fi.onrender.com") },
                 leadingIcon = {
                     Icon(
                         imageVector = Icons.Filled.Dns,
@@ -207,7 +207,7 @@ private fun SettingsAdminPreview() {
         SettingsContent(
             email = "admin@camp.com",
             role = "admin",
-            urlInput = "http://192.168.1.13:5000",
+            urlInput = "https://camp-96fi.onrender.com",
             onUrlInputChange = {},
             saved = false,
             onSave = {},
@@ -225,7 +225,7 @@ private fun SettingsStaffPreview() {
         SettingsContent(
             email = "scanner@camp.com",
             role = "staff",
-            urlInput = "http://localhost:5000",
+            urlInput = "https://camp-96fi.onrender.com",
             onUrlInputChange = {},
             saved = true,
             onSave = {},

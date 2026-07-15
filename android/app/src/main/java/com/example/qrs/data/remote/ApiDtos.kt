@@ -10,7 +10,9 @@ data class LoginRequest(
 data class LoginResponse(
     val token: String,
     val role: String,
-    val email: String
+    val email: String,
+    @SerializedName("mustChangePassword")
+    val mustChangePassword: Boolean? = false
 )
 
 data class ScanResponse(

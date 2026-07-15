@@ -27,8 +27,12 @@ class SettingsStore(private val context: Context) {
     }
 
     suspend fun setServerBaseUrl(url: String) {
+        var normalized = url.trim().trimEnd('/')
+        if (!normalized.startsWith("http://") && !normalized.startsWith("https://")) {
+            normalized = "https://$normalized"
+        }
         context.dataStore.edit { prefs ->
-            prefs[Keys.SERVER_BASE_URL] = url.trimEnd('/')
+            prefs[Keys.SERVER_BASE_URL] = normalized.trimEnd('/')
         }
     }
 }

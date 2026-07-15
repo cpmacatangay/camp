@@ -17,23 +17,18 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ErrorOutline
-import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -47,11 +42,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.qrs.BuildConfig
-import com.example.qrs.QRSApp
-import com.example.qrs.data.remote.NetworkModule
 import com.example.qrs.ui.theme.QRSCheckinTheme
-import kotlinx.coroutines.launch
 
 @Composable
 fun LoginScreen(
@@ -59,55 +50,15 @@ fun LoginScreen(
     onLoginSuccess: () -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
-    val scope = rememberCoroutineScope()
-    val settingsStore = QRSApp.instance.settingsStore
-
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
-    var showServerDialog by remember { mutableStateOf(false) }
-
-    val serverUrl by settingsStore.serverBaseUrl.collectAsState(initial = BuildConfig.SERVER_BASE_URL)
-    var serverUrlInput by remember { mutableStateOf(serverUrl) }
-
-    LaunchedEffect(serverUrl) {
-        serverUrlInput = serverUrl
-    }
 
     LaunchedEffect(state) {
         if (state is LoginState.Success) {
             onLoginSuccess()
             viewModel.reset()
         }
-    }
-
-    if (showServerDialog) {
-        AlertDialog(
-            onDismissRequest = { showServerDialog = false },
-            title = { Text("Server URL") },
-            text = {
-                OutlinedTextField(
-                    value = serverUrlInput,
-                    onValueChange = { serverUrlInput = it },
-                    label = { Text("Base URL") },
-                    placeholder = { Text("http://192.168.1.13:5000") },
-                    singleLine = true,
-                    modifier = Modifier.fillMaxWidth()
-                )
-            },
-            confirmButton = {
-                TextButton(onClick = {
-                    scope.launch {
-                        settingsStore.setServerBaseUrl(serverUrlInput)
-                        NetworkModule.baseUrl = serverUrlInput
-                    }
-                    showServerDialog = false
-                }) { Text("Save") }
-            },
-            dismissButton = {
-                TextButton(onClick = { showServerDialog = false }) { Text("Cancel") }
-            }
-        )
     }
 
     LoginForm(
@@ -125,7 +76,6 @@ fun LoginScreen(
         onTogglePassword = { passwordVisible = !passwordVisible },
         state = state,
         onLogin = { viewModel.login(email, password) },
-        onSettingsClick = { showServerDialog = true },
         onDone = { viewModel.login(email, password) }
     )
 }
@@ -140,7 +90,6 @@ private fun LoginForm(
     onTogglePassword: () -> Unit,
     state: LoginState,
     onLogin: () -> Unit,
-    onSettingsClick: () -> Unit,
     onDone: () -> Unit
 ) {
     val focusManager = LocalFocusManager.current
@@ -155,33 +104,13 @@ private fun LoginForm(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                text = "QRS Check-In",
-                style = MaterialTheme.typography.headlineLarge
-            )
-            IconButton(onClick = onSettingsClick) {
-                Icon(
-                    imageVector = Icons.Filled.Settings,
-                    contentDescription = "Server settings"
-                )
-            }
-        }
-
-        Spacer(Modifier.height(6.dp))
-
         Text(
-            text = "Staff login",
-            style = MaterialTheme.typography.bodyLarge,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            text = "QRS",
+            style = MaterialTheme.typography.headlineLarge,
             modifier = Modifier.fillMaxWidth()
         )
 
-        Spacer(Modifier.height(28.dp))
+        Spacer(Modifier.height(16.dp))
 
         OutlinedTextField(
             value = email,
@@ -205,7 +134,7 @@ private fun LoginForm(
             onValueChange = onPasswordChange,
             label = { Text("Password") },
             visualTransformation = if (passwordVisible) VisualTransformation.None
-                else PasswordVisualTransformation(),
+            else PasswordVisualTransformation(),
             keyboardOptions = KeyboardOptions(
                 keyboardType = KeyboardType.Password,
                 imeAction = ImeAction.Done
@@ -230,7 +159,9 @@ private fun LoginForm(
         Button(
             onClick = onLogin,
             enabled = state !is LoginState.Loading,
-            modifier = Modifier.fillMaxWidth().height(50.dp)
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(50.dp)
         ) {
             if (state is LoginState.Loading) {
                 CircularProgressIndicator(
@@ -279,7 +210,6 @@ private fun LoginFormIdlePreview() {
             onTogglePassword = {},
             state = LoginState.Idle,
             onLogin = {},
-            onSettingsClick = {},
             onDone = {}
         )
     }
@@ -298,7 +228,6 @@ private fun LoginFormFilledPreview() {
             onTogglePassword = {},
             state = LoginState.Idle,
             onLogin = {},
-            onSettingsClick = {},
             onDone = {}
         )
     }
@@ -317,7 +246,6 @@ private fun LoginFormLoadingPreview() {
             onTogglePassword = {},
             state = LoginState.Loading,
             onLogin = {},
-            onSettingsClick = {},
             onDone = {}
         )
     }
@@ -336,7 +264,6 @@ private fun LoginFormErrorPreview() {
             onTogglePassword = {},
             state = LoginState.Error("Invalid email or password"),
             onLogin = {},
-            onSettingsClick = {},
             onDone = {}
         )
     }

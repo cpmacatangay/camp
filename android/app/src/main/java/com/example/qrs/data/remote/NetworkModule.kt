@@ -11,7 +11,11 @@ object NetworkModule {
     @Volatile
     var baseUrl: String = BuildConfig.SERVER_BASE_URL
         set(value) {
-            field = value.trimEnd('/')
+            var url = value.trim().trimEnd('/')
+            if (!url.startsWith("http://") && !url.startsWith("https://")) {
+                url = "https://$url"
+            }
+            field = url
             synchronized(this) { _api = null }
         }
 
@@ -50,8 +54,8 @@ object NetworkModule {
                 chain.proceed(request.build())
             }
             .addInterceptor(logging)
-            .connectTimeout(30, TimeUnit.SECONDS)
-            .readTimeout(30, TimeUnit.SECONDS)
+            .connectTimeout(120, TimeUnit.SECONDS)
+            .readTimeout(120, TimeUnit.SECONDS)
             .build()
 
         return Retrofit.Builder()

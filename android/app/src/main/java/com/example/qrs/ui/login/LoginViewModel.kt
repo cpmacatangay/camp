@@ -37,6 +37,10 @@ class LoginViewModel : ViewModel() {
                 val response = api.login(LoginRequest(email.trim(), password))
                 if (response.isSuccessful) {
                     val body = response.body()!!
+                    if (body.mustChangePassword == true) {
+                        _state.value = LoginState.Error("Please change your password via the web admin first")
+                        return@launch
+                    }
                     authStore.saveLogin(body.token, body.email, body.role)
                     NetworkModule.setToken(body.token)
                     _state.value = LoginState.Success
