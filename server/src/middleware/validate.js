@@ -15,7 +15,7 @@ function getZodMessages(err) {
 function validate(schema) {
   return (req, res, next) => {
     try {
-      const parsed = schema.parse(req.body);
+      const parsed = schema.parse(req.body ?? {});
       req.body = parsed;
       next();
     } catch (err) {
