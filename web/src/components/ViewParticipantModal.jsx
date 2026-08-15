@@ -55,7 +55,7 @@ export default function ViewParticipantModal({ open, participant, onClose }) {
           <h2 id={titleId} className="text-lg font-semibold text-gray-800">
             Participant Details
           </h2>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 cursor-pointer" aria-label="Close">
+          <button onClick={onClose} className="text-gray-500 hover:text-gray-700 cursor-pointer" aria-label="Close">
             <X size={20} />
           </button>
         </div>
@@ -104,7 +104,7 @@ export default function ViewParticipantModal({ open, participant, onClose }) {
                 <div className="mt-1">
                   <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${
                     p.paymentStatus === 'yes'
-                      ? 'bg-green-100 text-green-700'
+                      ? 'bg-pine-100 text-pine-700'
                       : 'bg-yellow-100 text-yellow-700'
                   }`}>
                     {p.paymentStatus === 'yes'
@@ -118,7 +118,7 @@ export default function ViewParticipantModal({ open, participant, onClose }) {
                 <div className="mt-1">
                   <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
                     p.attendanceStatus === 'Present'
-                      ? 'bg-blue-100 text-blue-700'
+                      ? 'bg-pine-100 text-pine-700'
                       : 'bg-gray-100 text-gray-500'
                   }`}>
                     {p.attendanceStatus}
@@ -131,7 +131,7 @@ export default function ViewParticipantModal({ open, participant, onClose }) {
                 {label('Payment Screenshot')}
                 <div className="mt-1">
                   {screenshotSrc === 'error' ? (
-                    <p className="text-sm text-red-500">Failed to load screenshot</p>
+                    <p className="text-sm text-red-600">Failed to load screenshot</p>
                   ) : screenshotSrc ? (
                     <img
                       key={screenshotSrc}
@@ -140,7 +140,7 @@ export default function ViewParticipantModal({ open, participant, onClose }) {
                       className="h-32 w-auto rounded-lg border object-cover"
                     />
                   ) : (
-                    <p className="text-sm text-gray-400">Loading...</p>
+                    <p className="text-sm text-gray-500">Loading...</p>
                   )}
                 </div>
               </div>

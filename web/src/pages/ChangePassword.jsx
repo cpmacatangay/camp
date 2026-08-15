@@ -56,7 +56,7 @@ export default function ChangePassword() {
     <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
       <div className="w-full max-w-sm bg-white rounded-2xl shadow-sm border p-8">
         <div className="text-center mb-6">
-          <h1 className="text-2xl font-bold text-green-800">Change Password</h1>
+          <h1 className="font-display text-2xl font-extrabold text-pine-800 tracking-tight">Change Password</h1>
           <p className="text-sm text-gray-500 mt-1">
             You must change your default password before continuing
           </p>
@@ -70,40 +70,45 @@ export default function ChangePassword() {
           )}
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="current-password" className="block text-sm font-medium text-gray-700 mb-1">
               Current Password
             </label>
             <input
+              id="current-password"
               type="password"
+              autoComplete="current-password"
               value={currentPassword}
               onChange={(e) => setCurrentPassword(e.target.value)}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-base focus:outline-none focus:ring-2 focus:ring-green-500"
+              className="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-base focus:outline-none focus:ring-2 focus:ring-pine-500"
               required
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="new-password" className="block text-sm font-medium text-gray-700 mb-1">
               New Password (min. 10 characters)
             </label>
             <input
+              id="new-password"
               type="password"
+              autoComplete="new-password"
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-base focus:outline-none focus:ring-2 focus:ring-green-500"
+              className="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-base focus:outline-none focus:ring-2 focus:ring-pine-500"
               required
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="confirm-password" className="block text-sm font-medium text-gray-700 mb-1">
               Confirm New Password
             </label>
             <input
+              id="confirm-password"
               type="password"
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-base focus:outline-none focus:ring-2 focus:ring-green-500"
+              className="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-base focus:outline-none focus:ring-2 focus:ring-pine-500"
               required
             />
           </div>
@@ -111,20 +116,22 @@ export default function ChangePassword() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full flex items-center justify-center gap-2 bg-green-700 hover:bg-green-800 disabled:bg-green-400 text-white font-semibold py-3.5 sm:py-3 rounded-lg transition-colors cursor-pointer min-h-[48px]"
+            className="w-full flex items-center justify-center gap-2 bg-pine-700 hover:bg-pine-800 disabled:bg-pine-400 text-white font-semibold py-3.5 sm:py-3 rounded-lg transition-colors cursor-pointer min-h-[48px]"
           >
             <KeyRound size={18} />
             {loading ? "Changing..." : "Change Password"}
           </button>
 
-          <button
-            type="button"
-            onClick={() => navigate("/dashboard")}
-            className="w-full flex items-center justify-center gap-2 text-sm text-gray-500 hover:text-gray-700 py-2 cursor-pointer"
-          >
-            <ArrowLeft size={14} />
-            Back to Dashboard
-          </button>
+          {!user?.mustChangePassword && (
+            <button
+              type="button"
+              onClick={() => navigate("/dashboard")}
+              className="w-full flex items-center justify-center gap-2 text-sm text-gray-500 hover:text-gray-700 py-2 cursor-pointer"
+            >
+              <ArrowLeft size={14} />
+              Back to Dashboard
+            </button>
+          )}
         </form>
       </div>
     </div>

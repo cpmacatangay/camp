@@ -43,18 +43,23 @@ export function ToastProvider({ children }) {
   return (
     <ToastContext.Provider value={toast}>
       {children}
-      <div className="fixed top-4 right-4 z-[100] flex flex-col gap-2 max-w-sm w-full pointer-events-none">
+      <div
+        className="fixed top-4 right-4 z-[100] flex flex-col gap-2 max-w-sm w-full pointer-events-none"
+        role="status"
+        aria-live="polite"
+      >
         {toasts.map((t) => {
           const Icon = ICONS[t.type]
           return (
             <div
               key={t.id}
-              className={`pointer-events-auto flex items-start gap-3 px-4 py-3 rounded-lg border shadow-lg transition-all duration-300 animate-in slide-in-from-right ${COLORS[t.type]}`}
+              className={`pointer-events-auto flex items-start gap-3 px-4 py-3 rounded-lg border shadow-lg animate-toast-in ${COLORS[t.type]}`}
             >
               <Icon size={18} className="shrink-0 mt-0.5" />
               <span className="text-sm flex-1">{t.message}</span>
               <button
                 onClick={() => remove(t.id)}
+                aria-label="Dismiss notification"
                 className="shrink-0 cursor-pointer opacity-60 hover:opacity-100"
               >
                 <X size={14} />

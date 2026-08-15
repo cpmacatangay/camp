@@ -1,18 +1,92 @@
 @import "tailwindcss";
 
+@font-face {
+  font-family: "Sora";
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("/fonts/sora-700.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Sora";
+  font-style: normal;
+  font-weight: 800;
+  font-display: swap;
+  src: url("/fonts/sora-800.woff2") format("woff2");
+}
+
+@theme {
+  --font-sans: "Inter var", "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Sora", "Inter var", ui-sans-serif, sans-serif;
+
+  /* Pine — deep evergreen primary */
+  --color-pine-50: #f2f7f4;
+  --color-pine-100: #e2efe7;
+  --color-pine-200: #c5dfcf;
+  --color-pine-300: #9cc7ad;
+  --color-pine-400: #6faa86;
+  --color-pine-500: #4d8d68;
+  --color-pine-600: #3a7152;
+  --color-pine-700: #2f5b43;
+  --color-pine-800: #274a37;
+  --color-pine-900: #203c2d;
+  --color-pine-950: #11211a;
+
+  /* Blaze — trail-marker orange accent */
+  --color-blaze-50: #fff6ed;
+  --color-blaze-100: #ffead4;
+  --color-blaze-200: #ffd1a8;
+  --color-blaze-300: #ffb070;
+  --color-blaze-400: #ff8536;
+  --color-blaze-500: #fd6a0e;
+  --color-blaze-600: #ee4f04;
+  --color-blaze-700: #c53b05;
+  --color-blaze-800: #9c300c;
+  --color-blaze-900: #7e2a0c;
+
+  /* Trail — warm paper neutrals */
+  --color-trail-50: #faf7f2;
+  --color-trail-100: #f3ede1;
+  --color-trail-200: #e7dcc8;
+  --color-trail-300: #d6c6a8;
+}
+
 :root {
-  font-family: "Inter", sans-serif;
+  font-family: var(--font-sans);
 }
 @supports (font-variation-settings: normal) {
   :root {
-    font-family: "Inter var", sans-serif;
+    font-family: var(--font-sans);
   }
 }
 
+body {
+  background-color: var(--color-trail-50);
+  color: var(--color-pine-950);
+}
+
+/* New-attendance flash: a color swell, not a motion cue */
 @keyframes flash-green {
   0% { background-color: rgb(187 247 208); }
   100% { background-color: transparent; }
 }
 .animate-flash-green {
   animation: flash-green 2s ease-out;
+}
+
+/* Toast entry */
+@keyframes toast-in {
+  from { opacity: 0; transform: translateY(-8px) scale(0.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+.animate-toast-in {
+  animation: toast-in 250ms cubic-bezier(0.23, 1, 0.32, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-flash-green,
+  .animate-pulse,
+  .animate-toast-in {
+    animation: none !important;
+  }
 }

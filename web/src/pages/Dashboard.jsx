@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { io } from "socket.io-client";
-import { Search, Download, Plus, LogOut, KeyRound } from "lucide-react";
+import { Search, Download, Plus, LogOut, KeyRound, CheckCircle2, Circle } from "lucide-react";
 import {
   getParticipants,
   addParticipant,
@@ -13,6 +13,7 @@ import {
 } from "../api/client";
 import { useAuth } from "../context/AuthContext";
 import { useToast } from "../components/Toast";
+import Logo from "../components/Logo";
 import useDebouncedValue from "../hooks/useDebouncedValue";
 import SkeletonRow from "../components/SkeletonRow";
 import EmptyState from "../components/EmptyState";
@@ -249,13 +250,21 @@ export default function Dashboard() {
   }
 
   const filterClass =
-    "border border-gray-300 rounded-lg px-3 py-2.5 text-base focus:outline-none focus:ring-2 focus:ring-green-500 bg-white";
+    "border border-gray-300 rounded-lg px-3 py-2.5 text-base focus:outline-none focus:ring-2 focus:ring-pine-500 bg-white";
+
+  const isFiltering = !!(debouncedSearch || paymentFilter || attendanceFilter);
+
+  function clearFilters() {
+    setSearch("");
+    setPaymentFilter("");
+    setAttendanceFilter("");
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
       <header className="bg-white shadow-sm">
         <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
-          <h1 className="text-xl font-bold text-green-800">TRAILBLAZE</h1>
+          <Logo size={30} />
           <div className="flex items-center gap-2 sm:gap-3">
             <span className="hidden sm:inline-flex items-center gap-1.5 text-sm text-gray-500">
               <span
@@ -280,17 +289,19 @@ export default function Dashboard() {
             </span>
             <button
               onClick={handleChangePassword}
-              className="hidden sm:inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-green-700 cursor-pointer px-2 py-2.5 sm:py-2 min-h-[44px] sm:min-h-0"
+              className="hidden sm:inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-pine-700 cursor-pointer px-2 py-2.5 sm:py-2 min-h-[44px] sm:min-h-0"
               title="Change password"
+              aria-label="Change password"
             >
               <KeyRound size={16} />
             </button>
             <button
               onClick={handleExport}
-              className="flex items-center gap-1.5 text-sm bg-green-50 text-green-700 border border-green-200 px-4 py-2.5 sm:py-2 rounded-xl hover:bg-green-100 cursor-pointer min-h-[44px] sm:min-h-0 shadow-sm hover:shadow-md transition-all"
+              title="Download all participants as an Excel (.xlsx) file"
+              className="flex items-center gap-1.5 text-sm bg-pine-50 text-pine-700 border border-pine-200 px-4 py-2.5 sm:py-2 rounded-xl hover:bg-pine-100 cursor-pointer min-h-[44px] sm:min-h-0 shadow-sm hover:shadow-md transition-colors"
             >
               <Download size={16} />
-              Export
+              Export Excel
             </button>
             <button
               onClick={handleLogout}
@@ -310,18 +321,20 @@ export default function Dashboard() {
               <div className="relative w-full sm:flex-1 sm:min-w-[200px]">
                 <Search
                   size={16}
-                  className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+                  className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500"
                 />
                 <input
                   type="text"
                   placeholder="Search name, email, contact..."
+                  aria-label="Search participants"
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  className="w-full pl-9 pr-3 py-2.5 border border-gray-300 rounded-lg text-base focus:outline-none focus:ring-2 focus:ring-green-500"
+                  className="w-full pl-9 pr-3 py-2.5 border border-gray-300 rounded-lg text-base focus:outline-none focus:ring-2 focus:ring-pine-500"
                 />
               </div>
               <select
                 value={paymentFilter}
+                aria-label="Filter by payment status"
                 onChange={(e) => setPaymentFilter(e.target.value)}
                 className={`${filterClass} w-full sm:flex-none sm:w-auto`}
               >
@@ -331,6 +344,7 @@ export default function Dashboard() {
               </select>
               <select
                 value={attendanceFilter}
+                aria-label="Filter by attendance status"
                 onChange={(e) => setAttendanceFilter(e.target.value)}
                 className={`${filterClass} w-full sm:flex-none sm:w-auto`}
               >
@@ -343,14 +357,14 @@ export default function Dashboard() {
               {selectedIds.size > 0 && (
                 <button
                   onClick={() => setBulkDeleting(true)}
-                  className="flex items-center justify-center gap-1.5 bg-red-600 hover:bg-red-700 active:bg-red-800 text-white text-sm font-semibold px-4 py-3 rounded-xl transition-all cursor-pointer min-h-[48px] w-full sm:w-auto shadow-sm hover:shadow-md"
+                  className="flex items-center justify-center gap-1.5 bg-red-600 hover:bg-red-700 active:bg-red-800 text-white text-sm font-semibold px-4 py-3 rounded-xl transition-colors cursor-pointer min-h-[48px] w-full sm:w-auto shadow-sm hover:shadow-md"
                 >
                   Delete ({selectedIds.size})
                 </button>
               )}
               <button
                 onClick={() => setModalOpen(true)}
-                className="flex items-center justify-center gap-1.5 bg-green-700 hover:bg-green-800 active:bg-green-900 text-white text-sm font-semibold px-5 py-3 rounded-xl transition-all cursor-pointer min-h-[48px] w-full sm:w-auto shadow-sm hover:shadow-md"
+                className="flex items-center justify-center gap-1.5 bg-pine-700 hover:bg-pine-800 active:bg-pine-900 text-white text-sm font-semibold px-5 py-3 rounded-xl transition-colors cursor-pointer min-h-[48px] w-full sm:w-auto shadow-sm hover:shadow-md"
               >
                 <Plus size={16} />
                 Add Participant
@@ -363,7 +377,7 @@ export default function Dashboard() {
         <div className="bg-white rounded-xl shadow-sm p-4">
           <div className="flex items-center gap-4">
             <div className="flex items-baseline gap-1">
-              <span className="text-2xl font-bold text-green-700">
+              <span className="text-2xl font-bold text-pine-700">
                 {presentCount}
               </span>
               <span className="text-sm text-gray-500">
@@ -372,7 +386,7 @@ export default function Dashboard() {
             </div>
             <div className="flex-1 h-2.5 bg-gray-100 rounded-full overflow-hidden">
               <div
-                className="h-full bg-green-500 rounded-full transition-all duration-500"
+                className="h-full rounded-full transition-[width] duration-500 bg-gradient-to-r from-pine-500 to-blaze-500"
                 style={{
                   width:
                     totalParticipants > 0
@@ -400,6 +414,7 @@ export default function Dashboard() {
                 <th className="px-4 py-3 w-[4%]">
                   <input
                     type="checkbox"
+                    aria-label="Select all participants"
                     checked={
                       participants.length > 0 &&
                       selectedIds.size === participants.length
@@ -431,7 +446,11 @@ export default function Dashboard() {
                   <SkeletonRow cols={4} />
                 </>
               ) : participants.length === 0 ? (
-                <EmptyState onAdd={() => setModalOpen(true)} />
+                <EmptyState
+                  onAdd={() => setModalOpen(true)}
+                  filtering={isFiltering}
+                  onClearFilters={clearFilters}
+                />
               ) : (
                 participants.map((p) => (
                   <tr
@@ -441,20 +460,21 @@ export default function Dashboard() {
                     <td className="px-4 py-3">
                       <input
                         type="checkbox"
+                        aria-label={`Select ${p.name}`}
                         checked={selectedIds.has(p._id)}
                         onChange={() => toggleSelect(p._id)}
                         className="cursor-pointer"
                       />
                     </td>
                     <td className="px-4 py-3">
-                      <div className="font-medium text-gray-800">{p.name}</div>
-                      <div className="text-xs text-gray-400">{p.email}</div>
+                      <div className="font-medium text-gray-800 truncate" title={p.name}>{p.name}</div>
+                      <div className="text-xs text-gray-500 truncate" title={p.email}>{p.email}</div>
                     </td>
                     <td className="px-4 py-3">
                       <span
                         className={`inline-block px-2 py-0.5 rounded-full text-xs font-medium ${
                           p.paymentStatus === "yes"
-                            ? "bg-green-100 text-green-700"
+                            ? "bg-pine-100 text-pine-700"
                             : "bg-yellow-100 text-yellow-700"
                         }`}
                       >
@@ -464,15 +484,20 @@ export default function Dashboard() {
                     <td className="px-4 py-3">
                       <button
                         onClick={() => handleAttendanceToggle(p)}
-                        className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium cursor-pointer border ${
+                        aria-pressed={p.attendanceStatus === "Present"}
+                        title={p.attendanceStatus === "Present" ? "Mark as Absent" : "Mark as Present"}
+                        className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium cursor-pointer border ${
                           p.attendanceStatus === "Present"
-                            ? "bg-blue-100 text-blue-700 border-blue-200 hover:bg-blue-200"
+                            ? "bg-pine-100 text-pine-700 border-pine-200 hover:bg-pine-200"
                             : "bg-gray-100 text-gray-500 border-gray-200 hover:bg-gray-200"
                         }`}
                       >
-                        {p.attendanceStatus === "Present"
-                          ? "Present"
-                          : "Absent"}
+                        {p.attendanceStatus === "Present" ? (
+                          <CheckCircle2 size={13} />
+                        ) : (
+                          <Circle size={13} />
+                        )}
+                        {p.attendanceStatus === "Present" ? "Present" : "Absent"}
                       </button>
                     </td>
                     <td className="px-4 py-3">
@@ -524,14 +549,18 @@ export default function Dashboard() {
             <div className="bg-white rounded-xl shadow-sm p-12 text-center">
               <div className="flex flex-col items-center gap-3">
                 <div className="bg-gray-100 rounded-full p-3">
-                  <Search size={28} className="text-gray-400" />
+                  <Search size={28} className="text-gray-500" />
                 </div>
-                <p className="text-gray-500 text-sm">No participants found</p>
+                <p className="text-gray-500 text-sm">
+                  {isFiltering
+                    ? "No participants match your search"
+                    : "No participants yet"}
+                </p>
                 <button
-                  onClick={() => setModalOpen(true)}
-                  className="text-sm text-green-700 underline hover:text-green-800 cursor-pointer"
+                  onClick={isFiltering ? clearFilters : () => setModalOpen(true)}
+                  className="text-sm text-pine-700 underline hover:text-pine-800 cursor-pointer"
                 >
-                  Add the first participant
+                  {isFiltering ? "Clear search & filters" : "Add the first participant"}
                 </button>
               </div>
             </div>
@@ -544,10 +573,11 @@ export default function Dashboard() {
                 <div className="flex items-start justify-between">
                   <div className="flex-1 min-w-0">
                     <div className="font-medium text-gray-800">{p.name}</div>
-                    <div className="text-xs text-gray-400">{p.email}</div>
+                    <div className="text-xs text-gray-500">{p.email}</div>
                   </div>
                   <input
                     type="checkbox"
+                    aria-label={`Select ${p.name}`}
                     checked={selectedIds.has(p._id)}
                     onChange={() => toggleSelect(p._id)}
                     className="cursor-pointer ml-3 mt-1 shrink-0"
@@ -557,7 +587,7 @@ export default function Dashboard() {
                   <span
                     className={`inline-block px-2 py-0.5 rounded-full text-xs font-medium ${
                       p.paymentStatus === "yes"
-                        ? "bg-green-100 text-green-700"
+                        ? "bg-pine-100 text-pine-700"
                         : "bg-yellow-100 text-yellow-700"
                     }`}
                   >
@@ -565,31 +595,38 @@ export default function Dashboard() {
                   </span>
                   <button
                     onClick={() => handleAttendanceToggle(p)}
-                    className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium cursor-pointer border ${
+                    aria-pressed={p.attendanceStatus === "Present"}
+                    title={p.attendanceStatus === "Present" ? "Mark as Absent" : "Mark as Present"}
+                    className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium cursor-pointer border ${
                       p.attendanceStatus === "Present"
-                        ? "bg-blue-100 text-blue-700 border-blue-200 hover:bg-blue-200"
+                        ? "bg-pine-100 text-pine-700 border-pine-200 hover:bg-pine-200"
                         : "bg-gray-100 text-gray-500 border-gray-200 hover:bg-gray-200"
                     }`}
                   >
+                    {p.attendanceStatus === "Present" ? (
+                      <CheckCircle2 size={13} />
+                    ) : (
+                      <Circle size={13} />
+                    )}
                     {p.attendanceStatus === "Present" ? "Present" : "Absent"}
                   </button>
                 </div>
                 <div className="flex items-center justify-end gap-2">
                   <button
                     onClick={() => setViewing(p)}
-                    className="text-sm px-3 py-1.5 rounded-lg border border-gray-300 text-gray-600 hover:bg-gray-100 cursor-pointer"
+                    className="text-sm px-4 py-2.5 min-h-[44px] rounded-lg border border-gray-300 text-gray-600 hover:bg-gray-100 active:bg-gray-200 cursor-pointer"
                   >
                     View
                   </button>
                   <button
                     onClick={() => setEditing(p)}
-                    className="text-sm px-3 py-1.5 rounded-lg border border-gray-300 text-gray-600 hover:bg-gray-100 cursor-pointer"
+                    className="text-sm px-4 py-2.5 min-h-[44px] rounded-lg border border-gray-300 text-gray-600 hover:bg-gray-100 active:bg-gray-200 cursor-pointer"
                   >
                     Edit
                   </button>
                   <button
                     onClick={() => setDeleting(p)}
-                    className="text-sm px-3 py-1.5 rounded-lg border border-red-200 text-red-600 hover:bg-red-50 cursor-pointer"
+                    className="text-sm px-4 py-2.5 min-h-[44px] rounded-lg border border-red-200 text-red-600 hover:bg-red-50 cursor-pointer"
                   >
                     Delete
                   </button>
@@ -605,7 +642,7 @@ export default function Dashboard() {
             <button
               onClick={() => setPage((p) => Math.max(1, p - 1))}
               disabled={page <= 1}
-              className="px-3 py-2 text-sm rounded-xl border border-gray-300 text-gray-700 hover:bg-gray-100 disabled:opacity-40 disabled:cursor-default cursor-pointer shadow-sm hover:shadow-md transition-all"
+              className="px-4 py-2.5 text-sm rounded-xl border border-gray-300 text-gray-700 hover:bg-gray-100 disabled:opacity-40 disabled:cursor-default cursor-pointer shadow-sm hover:shadow-md transition-colors"
             >
               ← Prev
             </button>
@@ -616,13 +653,13 @@ export default function Dashboard() {
               .map((p, idx, arr) => (
                 <span key={p} className="flex items-center">
                   {idx > 0 && arr[idx - 1] !== p - 1 && (
-                    <span className="px-1 text-gray-400 text-sm">…</span>
+                    <span className="px-1 text-gray-500 text-sm">…</span>
                   )}
                   <button
                     onClick={() => setPage(p)}
-                    className={`px-3 py-1.5 text-sm rounded-xl cursor-pointer transition-all ${
+                    className={`px-3.5 py-2 text-sm rounded-xl cursor-pointer transition-colors ${
                       p === page
-                        ? "bg-green-700 text-white font-semibold shadow-sm"
+                        ? "bg-pine-700 text-white font-semibold shadow-sm"
                         : "text-gray-700 hover:bg-gray-100"
                     }`}
                   >
@@ -633,7 +670,7 @@ export default function Dashboard() {
             <button
               onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
               disabled={page >= totalPages}
-              className="px-3 py-2 text-sm rounded-xl border border-gray-300 text-gray-700 hover:bg-gray-100 disabled:opacity-40 disabled:cursor-default cursor-pointer shadow-sm hover:shadow-md transition-all"
+              className="px-4 py-2.5 text-sm rounded-xl border border-gray-300 text-gray-700 hover:bg-gray-100 disabled:opacity-40 disabled:cursor-default cursor-pointer shadow-sm hover:shadow-md transition-colors"
             >
               Next →
             </button>
@@ -655,6 +692,7 @@ export default function Dashboard() {
         open={!!deleting}
         title="Delete Participant"
         message={`Are you sure you want to delete "${deleting?.name}"? This cannot be undone.`}
+        confirmLabel={deleting ? `Delete ${deleting.name}` : "Delete"}
         onConfirm={handleDelete}
         onCancel={() => setDeleting(null)}
       />
@@ -669,6 +707,7 @@ export default function Dashboard() {
         open={bulkDeleting}
         title="Delete Participants"
         message={`Are you sure you want to delete ${selectedIds.size} participant${selectedIds.size === 1 ? "" : "s"}? This cannot be undone.`}
+        confirmLabel={`Delete ${selectedIds.size} participant${selectedIds.size === 1 ? "" : "s"}`}
         onConfirm={handleBulkDelete}
         onCancel={() => setBulkDeleting(false)}
       />

@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { LogIn } from "lucide-react";
+import Logo from "../components/Logo";
 import { useAuth } from "../context/AuthContext";
 import { useToast } from "../components/Toast";
 
@@ -38,7 +39,10 @@ export default function Login() {
     <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
       <div className="w-full max-w-sm bg-white rounded-2xl shadow-sm border p-8">
         <div className="text-center mb-6">
-          <h1 className="text-2xl font-bold text-green-800">Admin Login</h1>
+          <div className="flex justify-center mb-3">
+            <Logo size={40} withText={false} />
+          </div>
+          <h1 className="font-display text-2xl font-extrabold text-pine-800 tracking-tight">Admin Login</h1>
           <p className="text-sm text-gray-500 mt-1">TRAILBLAZE</p>
         </div>
 
@@ -50,27 +54,31 @@ export default function Login() {
           )}
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="login-email" className="block text-sm font-medium text-gray-700 mb-1">
               Email
             </label>
             <input
+              id="login-email"
               type="email"
+              autoComplete="email"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-base focus:outline-none focus:ring-2 focus:ring-green-500"
+              onChange={(e) => { setEmail(e.target.value); if (error) setError(""); }}
+              className="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-base focus:outline-none focus:ring-2 focus:ring-pine-500"
               required
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="login-password" className="block text-sm font-medium text-gray-700 mb-1">
               Password
             </label>
             <input
+              id="login-password"
               type="password"
+              autoComplete="current-password"
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-base focus:outline-none focus:ring-2 focus:ring-green-500"
+              onChange={(e) => { setPassword(e.target.value); if (error) setError(""); }}
+              className="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-base focus:outline-none focus:ring-2 focus:ring-pine-500"
               required
             />
           </div>
@@ -78,7 +86,7 @@ export default function Login() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full flex items-center justify-center gap-2 bg-green-700 hover:bg-green-800 disabled:bg-green-400 text-white font-semibold py-3.5 sm:py-3 rounded-lg transition-colors cursor-pointer min-h-[48px]"
+            className="w-full flex items-center justify-center gap-2 bg-pine-700 hover:bg-pine-800 disabled:bg-pine-400 text-white font-semibold py-3.5 sm:py-3 rounded-lg transition-colors cursor-pointer min-h-[48px]"
           >
             <LogIn size={18} />
             {loading ? "Logging in..." : "Sign In"}

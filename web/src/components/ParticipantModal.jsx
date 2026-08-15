@@ -7,6 +7,7 @@ import DateField from './form/DateField'
 import ParentsFieldset from './form/ParentsFieldset'
 import PaymentSection from './form/PaymentSection'
 import { useToast } from './Toast'
+import { PHONE_FIELDS, stripPhoneInput, applySentenceCase, validateAll } from '../lib/validation'
 
 const INITIAL = {
   name: '', homeAddress: '', birthDate: '', contactNumber: '', email: '',
@@ -14,19 +15,6 @@ const INITIAL = {
   fatherName: '', fatherContact: '', motherName: '', motherContact: '',
   paymentStatus: 'no',
 }
-
-function cleanPhone(v) {
-  return v.replace(/[\s\-()]/g, '')
-}
-
-function toSentenceCase(s) {
-  return s.replace(/\w\S*/g, (w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
-}
-
-const PH_MOBILE = /^(?:\+63|0)9\d{9}$/
-
-const phoneFields = ['contactNumber', 'fatherContact', 'motherContact']
-const sentenceCaseFields = ['name', 'homeAddress', 'facebookName', 'fatherName', 'motherName']
 
 export default function ParticipantModal({ open, participant, onSave, onClose }) {
   const [form, setForm] = useState(INITIAL)
@@ -63,60 +51,16 @@ export default function ParticipantModal({ open, participant, onSave, onClose })
   function set(field) {
     return (e) => {
       let newVal = e.target.value
-      if (phoneFields.includes(field)) {
-        newVal = newVal.replace(/[^\d+]/g, '')
+      if (PHONE_FIELDS.includes(field)) {
+        newVal = stripPhoneInput(newVal)
       }
-      if (sentenceCaseFields.includes(field)) {
-        newVal = toSentenceCase(newVal)
-      }
+      newVal = applySentenceCase(field, newVal)
       setForm((prev) => ({ ...prev, [field]: newVal }))
     }
   }
 
   function validate() {
-    const errs = {}
-    const required = [
-      'name', 'homeAddress', 'birthDate', 'contactNumber', 'email',
-      'nickname', 'facebookName', 'fatherName', 'fatherContact',
-      'motherName', 'motherContact',
-    ]
-    for (const field of required) {
-      if (!form[field].trim()) {
-        errs[field] = 'This field is required'
-      }
-    }
-    if (form.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) {
-      errs.email = 'Invalid email address'
-    }
-    if (form.contactNumber && !PH_MOBILE.test(cleanPhone(form.contactNumber))) {
-      errs.contactNumber = 'Enter a valid PH mobile number (e.g., 09171234567)'
-    }
-    if (form.fatherContact && !PH_MOBILE.test(cleanPhone(form.fatherContact))) {
-      errs.fatherContact = 'Enter a valid PH mobile number (e.g., 09171234567)'
-    }
-    if (form.motherContact && !PH_MOBILE.test(cleanPhone(form.motherContact))) {
-      errs.motherContact = 'Enter a valid PH mobile number (e.g., 09171234567)'
-    }
-    const nameFields = ['name', 'nickname', 'fatherName', 'motherName']
-    for (const field of nameFields) {
-      if (form[field] && /\d/.test(form[field])) {
-        errs[field] = 'Should not contain numbers'
-      } else if (form[field] && form[field].trim().length < 2) {
-        errs[field] = 'Must be at least 2 characters'
-      }
-    }
-    if (form.facebookName && /\d/.test(form.facebookName)) {
-      errs.facebookName = 'Should not contain numbers'
-    }
-    if (form.homeAddress && form.homeAddress.trim().length < 5) {
-      errs.homeAddress = 'Enter a full address (at least 5 characters)'
-    }
-    if (file && file.size > 5 * 1024 * 1024) {
-      errs.paymentScreenshot = 'File must be under 5MB'
-    }
-    if (file && !['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
-      errs.paymentScreenshot = 'Only JPEG, PNG, or WebP images'
-    }
+    const errs = validateAll(form, { file, requireScreenshot: false })
     setErrors(errs)
     return Object.keys(errs).length === 0
   }
@@ -157,7 +101,7 @@ export default function ParticipantModal({ open, participant, onSave, onClose })
           <h2 id={titleId} className="text-lg font-semibold text-gray-800">
             {isEdit ? 'Edit Participant' : 'Add New Participant'}
           </h2>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 cursor-pointer" aria-label="Close">
+          <button onClick={onClose} className="text-gray-500 hover:text-gray-700 cursor-pointer" aria-label="Close">
             <X size={20} />
           </button>
         </div>
@@ -193,7 +137,7 @@ export default function ParticipantModal({ open, participant, onSave, onClose })
             <button type="button" onClick={onClose} className="w-full sm:w-auto px-4 py-3 sm:py-2 text-sm rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 cursor-pointer min-h-[44px] sm:min-h-0">
               Cancel
             </button>
-            <button type="submit" disabled={saving} className="w-full sm:w-auto px-4 py-3 sm:py-2 text-sm rounded-lg bg-green-700 text-white hover:bg-green-800 disabled:bg-green-400 cursor-pointer min-h-[44px] sm:min-h-0">
+            <button type="submit" disabled={saving} className="w-full sm:w-auto px-4 py-3 sm:py-2 text-sm rounded-lg bg-pine-700 text-white hover:bg-pine-800 disabled:bg-pine-400 cursor-pointer min-h-[44px] sm:min-h-0">
               {saving ? 'Saving...' : isEdit ? 'Update' : 'Add Participant'}
             </button>
           </div>

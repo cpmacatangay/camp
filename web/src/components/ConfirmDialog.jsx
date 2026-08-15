@@ -1,7 +1,7 @@
 import { X } from 'lucide-react'
 import useModalA11y from '../hooks/useModalA11y'
 
-export default function ConfirmDialog({ open, title, message, onConfirm, onCancel }) {
+export default function ConfirmDialog({ open, title, message, onConfirm, onCancel, confirmLabel = 'Delete' }) {
   const { modalRef, titleId } = useModalA11y(open, onCancel)
 
   if (!open) return null
@@ -17,7 +17,7 @@ export default function ConfirmDialog({ open, title, message, onConfirm, onCance
       <div ref={modalRef} className="bg-white rounded-xl shadow-lg p-6 w-full max-w-sm mx-4">
         <div className="flex items-center justify-between mb-4">
           <h2 id={titleId} className="text-lg font-semibold text-gray-800">{title}</h2>
-          <button onClick={onCancel} className="text-gray-400 hover:text-gray-600 cursor-pointer" aria-label="Close">
+          <button onClick={onCancel} className="text-gray-500 hover:text-gray-700 cursor-pointer" aria-label="Close">
             <X size={20} />
           </button>
         </div>
@@ -33,7 +33,7 @@ export default function ConfirmDialog({ open, title, message, onConfirm, onCance
             onClick={onConfirm}
             className="px-4 py-2 text-sm rounded-lg bg-red-600 text-white hover:bg-red-700 cursor-pointer"
           >
-            Delete
+            {confirmLabel}
           </button>
         </div>
       </div>

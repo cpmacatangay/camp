@@ -13,7 +13,7 @@ export default function App() {
     <BrowserRouter>
       <AuthProvider>
         <ToastProvider>
-          <div className="min-h-screen bg-gray-50">
+          <div className="min-h-screen bg-trail-50">
             <Routes>
               <Route path="/" element={<Register />} />
               <Route path="/confirmation" element={<Confirmation />} />
