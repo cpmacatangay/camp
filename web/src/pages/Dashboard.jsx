@@ -14,6 +14,7 @@ import {
 import { useAuth } from "../context/AuthContext";
 import { useToast } from "../components/Toast";
 import Logo from "../components/Logo";
+import { Mascot } from "page-mascot";
 import useDebouncedValue from "../hooks/useDebouncedValue";
 import SkeletonRow from "../components/SkeletonRow";
 import EmptyState from "../components/EmptyState";
@@ -264,7 +265,15 @@ export default function Dashboard() {
     <div className="min-h-screen bg-gray-50">
       <header className="bg-white shadow-sm">
         <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
-          <Logo size={30} />
+          <div className="flex items-center gap-2">
+            <Logo size={30} />
+            <Mascot
+              directions="/mascots/pug-directions.webp"
+              reactions="/mascots/pug-reactions.webp"
+              size={44}
+              label="camp pug"
+            />
+          </div>
           <div className="flex items-center gap-2 sm:gap-3">
             <span className="hidden sm:inline-flex items-center gap-1.5 text-sm text-gray-500">
               <span
